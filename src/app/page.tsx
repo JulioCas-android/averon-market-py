@@ -52,8 +52,8 @@ export default function Home() {
 
   return (
     <div className="bg-background">
-      <section className="relative w-full h-[40vh] min-h-[300px]">
-        <div className="relative h-full flex flex-col items-center justify-center text-center p-4">
+      <section className="relative w-full flex justify-center py-12 md:py-16">
+        <div className="flex flex-col items-center text-center">
           <div className="mb-8 animate-fade-in-down">
             <Image
               src="https://i.imgur.com/Hj82IwR.png"
@@ -70,7 +70,7 @@ export default function Home() {
         </div>
       </section>
       
-      <section className="container mx-auto py-12 px-4">
+      <section className="container mx-auto pb-12 px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="flex flex-col items-center">
                 <PackageCheck className="w-12 h-12 text-primary mb-4" />
