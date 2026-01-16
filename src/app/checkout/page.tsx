@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -74,7 +75,7 @@ export default function CheckoutPage() {
     const ordersCollection = collection(firestore, 'orders');
 
     const newOrder: Omit<Order, 'id'> = {
-      userId: user?.uid || undefined,
+      ...(user && { userId: user.uid }),
       customerName: shippingInfo.name,
       customerEmail: shippingInfo.email,
       shippingAddress: shippingInfo.address,
