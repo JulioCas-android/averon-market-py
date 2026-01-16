@@ -56,10 +56,10 @@ export default function Home() {
         <div className="relative h-full flex flex-col items-center justify-center text-center p-4">
           <div className="mb-8 animate-fade-in-down">
             <Image
-              src="https://i.imgur.com/CxlQtxV.png"
+              src="https://i.imgur.com/Hj82IwR.png"
               alt="AVERON Market PY Logo"
-              width={250}
-              height={250}
+              width={400}
+              height={70}
               priority
               className="object-contain"
             />
