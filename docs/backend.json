@@ -95,7 +95,7 @@
     }
   },
   "auth": {
-    "providers": ["email", "google.com"]
+    "providers": ["email", "google.com", "phone"]
   },
   "firestore": {
     "/products/{productId}": {

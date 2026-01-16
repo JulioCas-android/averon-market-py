@@ -8,6 +8,9 @@ import {
   signOut as firebaseSignOut,
   updateProfile,
   type User as FirebaseUser,
+  GoogleAuthProvider,
+  signInWithPopup,
+  getAdditionalUserInfo,
 } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useAuth as useFirebaseAuth, useFirestore } from '@/firebase';
@@ -20,6 +23,7 @@ interface AuthContextType {
   login: (email: string, pass: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (name: string, email: string, pass: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -46,6 +50,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await firebaseSignOut(auth);
   };
 
+  const loginWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    
+    const additionalUserInfo = getAdditionalUserInfo(result);
+    if (additionalUserInfo?.isNewUser && user.displayName && user.email) {
+        const userProfile = {
+            name: user.displayName,
+            email: user.email,
+        };
+        const userDocRef = doc(firestore, 'users', user.uid);
+        
+        setDoc(userDocRef, userProfile).catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+              path: userDocRef.path,
+              operation: 'create',
+              requestResourceData: userProfile,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        });
+    }
+  };
+
   const register = async (name: string, email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     const firebaseUser = userCredential.user;
@@ -67,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const value = { user, loading, login, logout, register };
+  const value = { user, loading, login, logout, register, loginWithGoogle };
 
   return (
     <AuthContext.Provider value={value}>
