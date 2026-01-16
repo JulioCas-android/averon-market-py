@@ -3,10 +3,10 @@ import Image from 'next/image';
 
 export function Logo() {
   return (
-    <Link href="/" className="flex items-center" aria-label="AVERON Market PY Home">
+    <Link href="/" className="flex items-center" aria-label="AVERON Market PY Inicio">
       <Image
         src="https://i.imgur.com/UpxHMxI.png"
-        alt="AVERON Market PY Logo"
+        alt="Logotipo de AVERON Market PY"
         width={40}
         height={40}
         priority
