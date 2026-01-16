@@ -17,18 +17,16 @@ import { addDoc, collection } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowRight, Check, Square } from 'lucide-react';
+import { Loader2, ArrowRight, Check } from 'lucide-react';
 import type { Order } from '@/lib/types';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 
 const checkoutSchema = z.object({
   // Step 1
-  deliveryOption: z.enum(['delivery', 'pickup']).default('delivery'),
-  address: z.string(),
-  city: z.string(),
+  address: z.string().trim().min(5, 'La dirección completa es requerida.'),
+  city: z.string().trim().min(2, 'La ciudad es requerida.'),
   // Step 2
   razonSocial: z.string().min(2, 'La razón social es requerida'),
   ruc: z.string().min(6, 'El RUC o CI es requerido').regex(/^[0-9-]+$/, 'Solo números y guiones permitidos.'),
@@ -40,14 +38,6 @@ const checkoutSchema = z.object({
   thirdPartyName: z.string().optional(),
   thirdPartyId: z.string().optional(),
 }).superRefine((data, ctx) => {
-  if (data.deliveryOption === 'delivery') {
-    if (data.address.trim().length < 5) {
-      ctx.addIssue({ code: 'custom', path: ['address'], message: 'La dirección completa es requerida.' });
-    }
-    if (data.city.trim().length < 2) {
-      ctx.addIssue({ code: 'custom', path: ['city'], message: 'La ciudad es requerida.' });
-    }
-  }
   if (data.thirdPartyReceiver) {
     if (!data.thirdPartyName || data.thirdPartyName.trim().length < 3) {
       ctx.addIssue({
@@ -88,7 +78,6 @@ export default function CheckoutPage() {
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      deliveryOption: 'delivery',
       address: '',
       city: '',
       razonSocial: '',
@@ -112,7 +101,6 @@ export default function CheckoutPage() {
     }
   }, [user, form]);
 
-  const deliveryOption = form.watch('deliveryOption');
   const thirdPartyReceiver = form.watch('thirdPartyReceiver');
   const paymentMethod = form.watch('paymentMethod');
 
@@ -129,7 +117,7 @@ export default function CheckoutPage() {
   const handleNextStep = async () => {
     let fieldsToValidate: FieldPath<CheckoutFormValues>[] = [];
     if (step === 1) {
-        fieldsToValidate = ['deliveryOption', 'address', 'city'];
+        fieldsToValidate = ['address', 'city'];
     } else if (step === 2) {
         fieldsToValidate = ['razonSocial', 'ruc', 'email', 'phone'];
     }
@@ -173,8 +161,8 @@ export default function CheckoutPage() {
       customerRazonSocial: formValues.razonSocial,
       customerRuc: formValues.ruc,
       customerEmail: formValues.email,
-      shippingAddress: deliveryOption === 'delivery' ? formValues.address : 'Retiro en tienda',
-      shippingCity: deliveryOption === 'delivery' ? formValues.city : 'Asunción',
+      shippingAddress: formValues.address,
+      shippingCity: formValues.city,
       shippingPhone: formValues.phone,
       items: items.map(item => ({ ...item, product: { ...item.product } })), // Ensure plain objects
       total,
@@ -237,75 +225,37 @@ export default function CheckoutPage() {
         </Card>
 
         <Form {...form}>
-          {/* Step 1: Delivery Options */}
+          {/* Step 1: Delivery Address */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>1. Elegí una opción de entrega</CardTitle>
+              <CardTitle>1. Dirección de Envío</CardTitle>
               <ProgressIndicator step={1} totalSteps={3} />
             </CardHeader>
             {step === 1 ? (
                 <CardContent className="space-y-6">
-                    <RadioGroup 
-                        value={deliveryOption} 
-                        onValueChange={(value) => form.setValue('deliveryOption', value as 'delivery' | 'pickup', { shouldValidate: true })}
-                        className="space-y-4"
-                    >
-                        <FormItem className="flex items-center space-x-3 space-y-0 rounded-md border p-4 cursor-pointer hover:bg-muted/50">
-                            <FormControl>
-                                <RadioGroupItem value="delivery" id="delivery"/>
-                            </FormControl>
-                            <FormLabel htmlFor="delivery" className="font-normal text-base cursor-pointer">
-                                Envío a domicilio
-                            </FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-3 space-y-0 rounded-md border p-4 cursor-pointer hover:bg-muted/50">
-                            <FormControl>
-                                <RadioGroupItem value="pickup" id="pickup"/>
-                            </FormControl>
-                            <FormLabel htmlFor="pickup" className="font-normal text-base cursor-pointer">
-                                Retiro en tienda (Asunción)
-                            </FormLabel>
-                        </FormItem>
-                    </RadioGroup>
-
-                    {deliveryOption === 'delivery' && (
-                        <div className="space-y-4 pt-4 border-t">
-                            <FormField control={form.control} name="address" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Dirección</FormLabel>
-                                    <FormControl><Input placeholder="Calle, número, barrio, etc." {...field} /></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}/>
-                            <FormField control={form.control} name="city" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Ciudad</FormLabel>
-                                    <FormControl><Input placeholder="Tu ciudad" {...field} /></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}/>
-                        </div>
-                    )}
-                    {deliveryOption === 'pickup' && (
-                      <div className="space-y-4 pt-4 border-t text-sm text-muted-foreground">
-                        <p>Puede ser retirado de la tienda <strong>AVERON Market</strong> 3 horas después de recibir el mensaje con tu número de <strong>FACTURA</strong>, vía WhatsApp.</p>
-                        <div>
-                          <h4 className="font-semibold text-foreground">Dirección:</h4>
-                          <p>Avda. Eusebio Ayala e/ Prof. Sergio Conradi. <a href="https://maps.app.goo.gl/gD9g2y2q8g9H3jA88" target="_blank" rel="noopener noreferrer" className="text-primary underline">Ver mapa</a></p>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-foreground">Horarios de Atención:</h4>
-                          <p>Lunes a Domingo: 09:00 a 21:00</p>
-                        </div>
-                      </div>
-                    )}
+                    <div className="space-y-4">
+                        <FormField control={form.control} name="address" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Dirección</FormLabel>
+                                <FormControl><Input placeholder="Calle, número, barrio, etc." {...field} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}/>
+                        <FormField control={form.control} name="city" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Ciudad</FormLabel>
+                                <FormControl><Input placeholder="Tu ciudad" {...field} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}/>
+                    </div>
                 </CardContent>
             ) : (
                 <CardContent>
                     <div className="flex items-center justify-between text-sm">
                         <div>
-                            <p className="font-semibold">{deliveryOption === 'pickup' ? 'Retiro en tienda' : 'Envío a domicilio'}</p>
-                            <p className="text-muted-foreground">{deliveryOption === 'delivery' ? `${form.getValues('address')}, ${form.getValues('city')}` : 'Avda. Eusebio Ayala e/ Prof. Sergio Conradi'}</p>
+                            <p className="font-semibold">Envío a domicilio</p>
+                            <p className="text-muted-foreground">{`${form.getValues('address')}, ${form.getValues('city')}`}</p>
                         </div>
                         <Button variant="link" onClick={() => setStep(1)}>Cambiar</Button>
                     </div>
