@@ -62,12 +62,12 @@ export default function Home() {
           priority
           data-ai-hint={heroImage.imageHint}
         />
-        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-black/60" />
         <div className="relative h-full flex flex-col items-center justify-center text-center p-4">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 font-headline animate-fade-in-down">Averon Market PY</h1>
-          <p className="text-lg md:text-xl max-w-2xl mb-8 animate-fade-in-up">Confianza y calidad, a un clic de distancia.</p>
-          <Button size="lg" variant="secondary" className="animate-fade-in-up">
-            Explorar Ofertas
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 font-headline animate-fade-in-down">AVERON Market PY</h1>
+          <p className="text-lg md:text-xl max-w-2xl mb-8 animate-fade-in-up">Tecnología y comodidad en un solo lugar.</p>
+          <Button size="lg" variant="secondary" className="animate-fade-in-up" asChild>
+            <a href="#products">Ver Productos</a>
           </Button>
         </div>
       </section>

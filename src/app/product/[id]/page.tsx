@@ -13,11 +13,12 @@ import type { Product } from '@/lib/types';
 import { ProductCard } from '@/components/product-card';
 
 export default function ProductDetailPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const { addItem } = useCart();
   const { toast } = useToast();
   
-  const product = allProducts.find(p => p.id === params.id);
+  const product = allProducts.find(p => p.id === id);
 
   const relatedProducts = useMemo(() => {
     if (!product) return [];

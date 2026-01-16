@@ -11,7 +11,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-1 space-y-4">
             <Logo />
-            <p className="text-sm">Confianza y calidad, a un clic de distancia.</p>
+            <p className="text-sm">Tecnología y comodidad en un solo lugar.</p>
             <div className="flex space-x-4">
               <Link href="#" className="hover:text-foreground"><Github className="h-5 w-5" /></Link>
               <Link href="#" className="hover:text-foreground"><Twitter className="h-5 w-5" /></Link>
@@ -45,7 +45,7 @@ export function Footer() {
           </div>
         </div>
         <div className="border-t mt-8 pt-6 text-center text-sm">
-          <p>&copy; {new Date().getFullYear()} Averon Market PY. Todos los derechos reservados.</p>
+          <p>&copy; {new Date().getFullYear()} AVERON Market PY. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>
