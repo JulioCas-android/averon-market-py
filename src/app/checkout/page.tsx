@@ -362,8 +362,12 @@ export default function CheckoutPage() {
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                <SelectItem value="COD">Pago contra entrega (Efectivo)</SelectItem>
-                                {/* Add other payment methods here */}
+                                <SelectItem value="TCRD">Pago Online - Tarjeta de Crédito / Débito</SelectItem>
+                                <SelectItem value="QR">Pago Online - Código QR</SelectItem>
+                                <SelectItem value="COOP">Coop. Universitaria - ONLINE hasta 10 Cuotas</SelectItem>
+                                <SelectItem value="TRNF">Transferencia Bancaria</SelectItem>
+                                <SelectItem value="TIGO">Tigo Money</SelectItem>
+                                <SelectItem value="COD">Efectivo - Contra Entrega</SelectItem>
                             </SelectContent>
                         </Select>
                         <FormMessage />
