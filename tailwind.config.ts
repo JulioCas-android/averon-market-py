@@ -88,10 +88,22 @@ export default {
             height: '0',
           },
         },
+        'subtle-pulse': {
+          '0%': {
+            boxShadow: '0 0 0 0 rgba(37, 211, 102, 0.5)',
+          },
+          '70%': {
+            boxShadow: '0 0 0 12px rgba(37, 211, 102, 0)',
+          },
+          '100%': {
+            boxShadow: '0 0 0 0 rgba(37, 211, 102, 0)',
+          },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'subtle-pulse': 'subtle-pulse 2.5s infinite',
       },
     },
   },

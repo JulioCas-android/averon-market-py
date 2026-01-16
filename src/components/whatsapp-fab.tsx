@@ -44,7 +44,7 @@ export function WhatsAppFAB() {
         <PopoverTrigger asChild>
             <Button
                 variant="default"
-                className="fixed bottom-6 right-6 z-50 rounded-full h-16 w-16 bg-[#25D366] hover:bg-[#128C7E] shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
+                className="fixed bottom-6 right-6 z-50 rounded-full h-14 w-14 bg-[#25D366] hover:bg-[#128C7E] shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 animate-subtle-pulse"
                 aria-label="Contactar por WhatsApp"
             >
                  <WhatsAppIcon className="h-8 w-8 text-white" />
