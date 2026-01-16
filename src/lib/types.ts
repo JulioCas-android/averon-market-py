@@ -37,4 +37,6 @@ export interface Order {
   items: CartItem[];
   total: number;
   status: 'Procesando' | 'Pendiente de Pago' | 'Pagado' | 'Enviado' | 'Entregado' | 'Cancelado';
+  paymentMethod: string;
+  thirdPartyReceiver: boolean;
 }

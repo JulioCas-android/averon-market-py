@@ -73,9 +73,17 @@
           "type": "string",
           "enum": ["Procesando", "Pendiente de Pago", "Pagado", "Enviado", "Entregado", "Cancelado"]
         },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "createdAt": { "type": "string", "format": "date-time" },
+        "paymentMethod": {
+          "type": "string",
+          "description": "The payment method selected by the customer."
+        },
+        "thirdPartyReceiver": {
+          "type": "boolean",
+          "description": "Indicates if a third party will receive the order."
+        }
       },
-      "required": ["customerRazonSocial", "customerRuc", "customerEmail", "shippingAddress", "items", "total", "status", "createdAt"]
+      "required": ["customerRazonSocial", "customerRuc", "customerEmail", "shippingAddress", "items", "total", "status", "createdAt", "paymentMethod", "thirdPartyReceiver"]
     }
   },
   "auth": {

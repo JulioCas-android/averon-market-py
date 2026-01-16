@@ -1,10 +1,11 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/hooks/use-cart';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useForm, type FieldPath } from 'react-hook-form';
@@ -17,10 +18,12 @@ import { addDoc, collection } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowRight, Check, Square } from 'lucide-react';
 import type { Order } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const checkoutSchema = z.object({
   // Step 1
@@ -32,6 +35,9 @@ const checkoutSchema = z.object({
   ruc: z.string().min(6, 'El RUC o CI es requerido').regex(/^[0-9-]+$/, 'Solo números y guiones permitidos.'),
   email: z.string().email('El email es inválido'),
   phone: z.string().min(6, 'El teléfono es requerido'),
+  // Step 3
+  paymentMethod: z.string({ required_error: 'Debes seleccionar un método de pago.' }).min(1, 'Debes seleccionar un método de pago.'),
+  thirdPartyReceiver: z.boolean().default(false),
 }).superRefine((data, ctx) => {
   if (data.deliveryOption === 'delivery') {
     if (data.address.trim().length < 5) {
@@ -72,6 +78,8 @@ export default function CheckoutPage() {
       ruc: '',
       email: '',
       phone: '',
+      paymentMethod: '',
+      thirdPartyReceiver: false,
     },
   });
 
@@ -117,7 +125,7 @@ export default function CheckoutPage() {
     }
   };
 
-  const handlePlaceOrder = async (paymentMethod: 'COD' = 'COD') => {
+  const handlePlaceOrder = async () => {
     const isValid = await form.trigger();
     if (!isValid) {
       toast({
@@ -151,12 +159,14 @@ export default function CheckoutPage() {
       total,
       status: 'Pendiente de Pago',
       createdAt: new Date().toISOString(),
+      paymentMethod: formValues.paymentMethod,
+      thirdPartyReceiver: formValues.thirdPartyReceiver,
     };
     
     addDoc(ordersCollection, newOrder)
     .then((docRef) => {
         clearCart();
-        router.push(`/order-confirmation?method=${paymentMethod}`);
+        router.push(`/order-confirmation?method=${formValues.paymentMethod}`);
     })
     .catch((serverError) => {
         const permissionError = new FirestorePermissionError({
@@ -269,8 +279,8 @@ export default function CheckoutPage() {
                 <CardContent>
                     <div className="flex items-center justify-between text-sm">
                         <div>
-                            <p className="font-semibold">{deliveryOption === 'pickup' ? 'Retirar de TUPI - Zona Pickup' : 'Envío a domicilio'}</p>
-                            <p className="text-muted-foreground">{deliveryOption === 'delivery' ? `${form.getValues('address')}, ${form.getValues('city')}` : 'Prof. Sergio Conradi c/ Avda. Eusebio Ayala'}</p>
+                            <p className="font-semibold">{deliveryOption === 'pickup' ? 'Retiro en tienda' : 'Envío a domicilio'}</p>
+                            <p className="text-muted-foreground">{deliveryOption === 'delivery' ? `${form.getValues('address')}, ${form.getValues('city')}` : 'Avda. Eusebio Ayala e/ Prof. Sergio Conradi'}</p>
                         </div>
                         <Button variant="link" onClick={() => setStep(1)}>Cambiar</Button>
                     </div>
@@ -338,8 +348,63 @@ export default function CheckoutPage() {
                  {step >= 3 && <ProgressIndicator step={3} totalSteps={3} />}
               </CardHeader>
               {step === 3 && (
-                <CardContent>
-                    <p className="text-center text-muted-foreground py-8">Aquí irían las opciones de pago.</p>
+                <CardContent className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="paymentMethod"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Elegí una Opción</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="-- Selecciona tu Método de Pago--" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="COD">Pago contra entrega (Efectivo)</SelectItem>
+                                {/* Add other payment methods here */}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Totales</h3>
+                    <div className="space-y-2 text-muted-foreground">
+                        <div className="flex justify-between">
+                            <span>Sub-Total (IVA Incld.)</span>
+                            <span className="font-medium text-foreground">Gs. {total.toLocaleString('es-PY')}</span>
+                        </div>
+                        <Separator />
+                        <div className="flex justify-between text-lg font-bold">
+                            <span className="text-foreground">Total (IVA Incld.)</span>
+                            <span className="text-foreground">Gs. {total.toLocaleString('es-PY')}</span>
+                        </div>
+                    </div>
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="thirdPartyReceiver"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>
+                            Un tercero recibirá o retirará los productos
+                          </FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
                 </CardContent>
               )}
           </Card>
@@ -352,8 +417,9 @@ export default function CheckoutPage() {
                     {!isProcessing && <ArrowRight className="ml-2 h-5 w-5" />}
                  </Button>
               ) : (
-                 <Button onClick={() => handlePlaceOrder('COD')} size="lg" className="w-full h-12 text-base" disabled={isProcessing}>
-                    {isProcessing ? <Loader2 className="animate-spin" /> : 'Finalizar Pedido'}
+                 <Button onClick={handlePlaceOrder} size="lg" variant="secondary" className="w-full h-12 text-lg font-bold" disabled={isProcessing}>
+                    {isProcessing ? <Loader2 className="animate-spin" /> : '¡COMPRAR!'}
+                    {!isProcessing && <Check className="ml-2 h-6 w-6" />}
                  </Button>
               )}
           </div>
