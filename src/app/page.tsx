@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -10,8 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Search, ChevronDown, PackageCheck, Truck, ShieldCheck } from 'lucide-react';
-import { heroImage } from '@/lib/placeholder-images';
-import { Logo } from '@/components/logo';
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -55,7 +52,7 @@ export default function Home() {
 
   return (
     <div className="bg-background">
-      <section className="relative w-full h-[50vh] min-h-[400px] bg-gradient-to-br from-blue-900 via-blue-800 to-orange-700 text-white">
+      <section className="relative w-full h-[40vh] min-h-[300px] bg-gradient-to-br from-blue-900 via-blue-800 to-orange-700 text-white">
         <div className="relative h-full flex flex-col items-center justify-center text-center p-4">
           <div className="mb-8 animate-fade-in-down">
             <Image
