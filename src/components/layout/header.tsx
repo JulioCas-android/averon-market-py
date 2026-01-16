@@ -15,8 +15,8 @@ import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 const NavLinks = ({ onLinkClick }: { onLinkClick?: () => void }) => (
   <>
     <Link href="/#products" onClick={onLinkClick} className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Productos</Link>
-    <Link href="#" onClick={onLinkClick} className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Ofertas</Link>
-    <Link href="#" onClick={onLinkClick} className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Sobre Nosotros</Link>
+    <Link href="/about" onClick={onLinkClick} className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Sobre Nosotros</Link>
+    <Link href="/contact" onClick={onLinkClick} className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Contacto</Link>
   </>
 );
 
