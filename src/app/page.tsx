@@ -52,14 +52,14 @@ export default function Home() {
 
   return (
     <div className="bg-background">
-      <section className="relative w-full h-[40vh] min-h-[300px] bg-gradient-to-br from-blue-900 via-blue-800 to-orange-700 text-white">
+      <section className="relative w-full h-[40vh] min-h-[300px] text-white">
         <div className="relative h-full flex flex-col items-center justify-center text-center p-4">
           <div className="mb-8 animate-fade-in-down">
             <Image
-              src="https://i.imgur.com/CxlQtxV.png"
+              src="/6c685cda-bb1e-4da0-90d9-e3058eb821f6.png"
               alt="AVERON Market PY Logo"
-              width={400}
-              height={138}
+              width={500}
+              height={100}
               priority
             />
           </div>
