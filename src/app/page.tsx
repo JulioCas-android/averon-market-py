@@ -52,15 +52,16 @@ export default function Home() {
 
   return (
     <div className="bg-background">
-      <section className="relative w-full h-[40vh] min-h-[300px] text-white">
+      <section className="relative w-full h-[40vh] min-h-[300px]">
         <div className="relative h-full flex flex-col items-center justify-center text-center p-4">
           <div className="mb-8 animate-fade-in-down">
             <Image
-              src="/6c685cda-bb1e-4da0-90d9-e3058eb821f6.png"
+              src="https://i.imgur.com/CxlQtxV.png"
               alt="AVERON Market PY Logo"
-              width={500}
-              height={100}
+              width={250}
+              height={250}
               priority
+              className="object-contain"
             />
           </div>
           <Button size="lg" variant="secondary" className="animate-fade-in-up" asChild>
