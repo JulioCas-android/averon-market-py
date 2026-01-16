@@ -10,7 +10,6 @@ import { FirebaseClientProvider } from '@/firebase/client-provider';
 export const metadata: Metadata = {
   title: 'AVERON Market PY',
   description: 'Tecnología y comodidad en un solo lugar.',
-  manifest: '/manifest.json',
   themeColor: '#0B57D0',
   icons: {
     icon: 'https://i.imgur.com/UpxHMxI.png',
@@ -29,6 +28,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
