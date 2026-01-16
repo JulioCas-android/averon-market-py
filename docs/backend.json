@@ -49,7 +49,8 @@
           "type": "string",
           "description": "The UID of the registered user, if applicable."
         },
-        "customerName": { "type": "string" },
+        "customerRazonSocial": { "type": "string" },
+        "customerRuc": { "type": "string" },
         "customerEmail": { "type": "string", "format": "email" },
         "shippingAddress": { "type": "string" },
         "shippingCity": { "type": "string" },
@@ -74,7 +75,7 @@
         },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["customerName", "customerEmail", "shippingAddress", "items", "total", "status", "createdAt"]
+      "required": ["customerRazonSocial", "customerRuc", "customerEmail", "shippingAddress", "items", "total", "status", "createdAt"]
     }
   },
   "auth": {

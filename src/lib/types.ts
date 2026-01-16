@@ -27,7 +27,8 @@ export interface User {
 export interface Order {
   id: string;
   userId?: string; // For registered users
-  customerName: string;
+  customerRazonSocial: string;
+  customerRuc: string;
   customerEmail: string;
   shippingAddress: string;
   shippingCity: string;
