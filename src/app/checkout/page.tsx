@@ -17,11 +17,13 @@ import { addDoc, collection, type DocumentReference } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowRight, Check, MapPin } from 'lucide-react';
+import { Loader2, ArrowRight, Check, MapPin, Info } from 'lucide-react';
 import type { Order } from '@/lib/types';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import Link from 'next/link';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const checkoutSchema = z.object({
   // Step 1
@@ -70,7 +72,7 @@ export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
   const router = useRouter();
   const firestore = useFirestore();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState(1);
@@ -279,6 +281,16 @@ export default function CheckoutPage() {
             </CardHeader>
             {step === 2 && (
                 <CardContent className="space-y-6">
+                    {!authLoading && !user && (
+                        <Alert className="mb-4">
+                            <Info className="h-4 w-4" />
+                            <AlertTitle>¿Ya tienes una cuenta?</AlertTitle>
+                            <AlertDescription>
+                                <Link href="/login" className="font-semibold underline text-primary">Inicia sesión</Link> o <Link href="/signup" className="font-semibold underline text-primary">regístrate</Link> para agilizar tus futuras compras.
+                                <p className="text-xs mt-1">También puedes continuar como invitado.</p>
+                            </AlertDescription>
+                        </Alert>
+                    )}
                     <p className="text-sm text-muted-foreground">Cargá y verificá cuidadosamente tus datos para la emisión de la FACTURA ELECTRÓNICA. Ya no podrán ser modificados.</p>
                     <FormField control={form.control} name="phone" render={({ field }) => (
                         <FormItem>
