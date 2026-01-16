@@ -224,7 +224,7 @@ export default function ProductDetailPage() {
                     {relatedLoading ? 
                       Array.from({length: 2}).map((_, i) => <Skeleton key={i} className="h-28 w-full"/>)
                       : relatedProducts.map((p: Product) => (
-                          <ProductCard key={p.id} product={p} />
+                          <ProductCard key={p.id} product={p} layout="list" />
                       ))
                     }
                   </div>
