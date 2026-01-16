@@ -5,7 +5,7 @@ import { addDoc, collection, deleteDoc, doc, updateDoc } from 'firebase/firestor
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import type { Product } from '@/lib/types';
+import type { Product, Order } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -16,7 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { Loader2, Sparkles, Upload, Pencil, Trash2 } from 'lucide-react';
+import { Loader2, Sparkles, Upload, Pencil, Trash2, Package, ShoppingCart as ShoppingCartIcon } from 'lucide-react';
 import { useState, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import { generateProductImageAction, generateProductDescriptionAction, suggestProductCategoryAction } from '@/app/actions';
@@ -40,6 +40,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
 const productSchema = z.object({
@@ -55,9 +56,13 @@ const productSchema = z.object({
   onSale: z.boolean().default(false),
 });
 
+const orderStatuses: Order['status'][] = ['Procesando', 'Pendiente de Pago', 'Pagado', 'Enviado', 'Entregado', 'Cancelado'];
+
+
 export default function AdminPage() {
   const firestore = useFirestore();
   const { data: products, loading: productsLoading } = useCollection<Product>('products');
+  const { data: orders, loading: ordersLoading } = useCollection<Order>('orders');
   const { toast } = useToast();
   
   // State for form submissions
@@ -95,6 +100,12 @@ export default function AdminPage() {
     if (!products) return [];
     return [...new Set(products.map(p => p.category).filter(Boolean))];
   }, [products]);
+
+  const sortedOrders = useMemo(() => {
+    if (!orders) return [];
+    return [...orders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [orders]);
+
 
   const imageUrl = form.watch('image');
 
@@ -220,6 +231,22 @@ export default function AdminPage() {
     }
   };
 
+  const handleUpdateStatus = async (orderId: string, status: Order['status']) => {
+    if (!firestore) return;
+    const orderDocRef = doc(firestore, 'orders', orderId);
+    updateDoc(orderDocRef, { status })
+      .then(() => {
+        toast({
+          title: 'Estado Actualizado',
+          description: `El pedido #${orderId.substring(0, 6)}... ahora está "${status}".`,
+        });
+      })
+      .catch((serverError) => {
+        const permissionError = new FirestorePermissionError({ path: orderDocRef.path, operation: 'update', requestResourceData: { status } });
+        errorEmitter.emit('permission-error', permissionError);
+      });
+  };
+
   // Common form fields component to avoid repetition
   const ProductFormFields = () => (
     <>
@@ -303,83 +330,143 @@ export default function AdminPage() {
     <div className="container mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-8">Panel de Administración</h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader><CardTitle>Crear Nuevo Producto</CardTitle><CardDescription>Completa el formulario para agregar un producto.</CardDescription></CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onCreateSubmit)} className="space-y-6">
-                  <ProductFormFields />
-                  <Button type="submit" disabled={isSubmitting || isGeneratingImage || isGeneratingDescription} className="w-full">
-                    {isSubmitting ? <Loader2 className="animate-spin" /> : 'Agregar Producto'}
-                  </Button>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </div>
-        <div className="lg:col-span-2">
-           <Card>
-            <CardHeader><CardTitle>Productos Existentes</CardTitle><CardDescription>Lista de todos los productos en la tienda.</CardDescription></CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Imagen</TableHead>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Precio</TableHead>
-                    <TableHead>Stock</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {productsLoading ? (
-                    <TableRow><TableCell colSpan={5} className="text-center">Cargando productos...</TableCell></TableRow>
-                  ) : products && products.length > 0 ? (
-                    products.map((product) => (
-                      <TableRow key={product.id}>
-                        <TableCell><Image src={product.image} alt={product.name} width={40} height={40} className="rounded-md object-cover" /></TableCell>
-                        <TableCell className="font-medium">{product.name}</TableCell>
-                        <TableCell>Gs. {product.price.toLocaleString('es-PY')}</TableCell>
-                        <TableCell>{product.stock > 0 ? product.stock : 'Agotado'}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex gap-2 justify-end">
-                            <Button variant="ghost" size="icon" onClick={() => handleEditClick(product)}>
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                             <AlertDialog open={!!deletingProduct && deletingProduct.id === product.id} onOpenChange={(isOpen) => !isOpen && setDeletingProduct(null)}>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setDeletingProduct(product)}>
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Esta acción es permanente y no se puede deshacer. Se eliminará el producto: <span className="font-semibold">{deletingProduct?.name}</span>.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                  <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                     <TableRow><TableCell colSpan={5} className="text-center h-24">No hay productos. Agrega uno nuevo.</TableCell></TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <Tabs defaultValue="products" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="products"><Package className="mr-2 h-4 w-4"/>Gestionar Productos</TabsTrigger>
+            <TabsTrigger value="orders"><ShoppingCartIcon className="mr-2 h-4 w-4"/>Gestionar Pedidos</TabsTrigger>
+        </TabsList>
+        <TabsContent value="products">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <div className="lg:col-span-1">
+                <Card>
+                    <CardHeader><CardTitle>Crear Nuevo Producto</CardTitle><CardDescription>Completa el formulario para agregar un producto.</CardDescription></CardHeader>
+                    <CardContent>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onCreateSubmit)} className="space-y-6">
+                        <ProductFormFields />
+                        <Button type="submit" disabled={isSubmitting || isGeneratingImage || isGeneratingDescription} className="w-full">
+                            {isSubmitting ? <Loader2 className="animate-spin" /> : 'Agregar Producto'}
+                        </Button>
+                        </form>
+                    </Form>
+                    </CardContent>
+                </Card>
+                </div>
+                <div className="lg:col-span-2">
+                <Card>
+                    <CardHeader><CardTitle>Productos Existentes</CardTitle><CardDescription>Lista de todos los productos en la tienda.</CardDescription></CardHeader>
+                    <CardContent>
+                    <Table>
+                        <TableHeader>
+                        <TableRow>
+                            <TableHead>Imagen</TableHead>
+                            <TableHead>Nombre</TableHead>
+                            <TableHead>Precio</TableHead>
+                            <TableHead>Stock</TableHead>
+                            <TableHead className="text-right">Acciones</TableHead>
+                        </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {productsLoading ? (
+                            <TableRow><TableCell colSpan={5} className="text-center">Cargando productos...</TableCell></TableRow>
+                        ) : products && products.length > 0 ? (
+                            products.map((product) => (
+                            <TableRow key={product.id}>
+                                <TableCell><Image src={product.image} alt={product.name} width={40} height={40} className="rounded-md object-cover" /></TableCell>
+                                <TableCell className="font-medium">{product.name}</TableCell>
+                                <TableCell>Gs. {product.price.toLocaleString('es-PY')}</TableCell>
+                                <TableCell>{product.stock > 0 ? product.stock : 'Agotado'}</TableCell>
+                                <TableCell className="text-right">
+                                <div className="flex gap-2 justify-end">
+                                    <Button variant="ghost" size="icon" onClick={() => handleEditClick(product)}>
+                                    <Pencil className="h-4 w-4" />
+                                    </Button>
+                                    <AlertDialog open={!!deletingProduct && deletingProduct.id === product.id} onOpenChange={(isOpen) => !isOpen && setDeletingProduct(null)}>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setDeletingProduct(product)}>
+                                        <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                        <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            Esta acción es permanente y no se puede deshacer. Se eliminará el producto: <span className="font-semibold">{deletingProduct?.name}</span>.
+                                        </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                        <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+                                </TableCell>
+                            </TableRow>
+                            ))
+                        ) : (
+                            <TableRow><TableCell colSpan={5} className="text-center h-24">No hay productos. Agrega uno nuevo.</TableCell></TableRow>
+                        )}
+                        </TableBody>
+                    </Table>
+                    </CardContent>
+                </Card>
+                </div>
+            </div>
+        </TabsContent>
+        <TabsContent value="orders">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Historial de Pedidos</CardTitle>
+                    <CardDescription>Visualiza y gestiona los pedidos de tus clientes.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Pedido ID</TableHead>
+                                <TableHead>Cliente</TableHead>
+                                <TableHead>Fecha</TableHead>
+                                <TableHead>Total</TableHead>
+                                <TableHead className='w-[180px]'>Estado</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {ordersLoading ? (
+                            <TableRow><TableCell colSpan={5} className="text-center h-24">Cargando pedidos...</TableCell></TableRow>
+                        ) : sortedOrders && sortedOrders.length > 0 ? (
+                            sortedOrders.map((order) => (
+                                <TableRow key={order.id}>
+                                    <TableCell className="font-medium font-mono text-xs">#{order.id.substring(0, 7)}...</TableCell>
+                                    <TableCell>{order.customerRazonSocial}</TableCell>
+                                    <TableCell>{new Date(order.createdAt).toLocaleDateString('es-PY')}</TableCell>
+                                    <TableCell>Gs. {order.total.toLocaleString('es-PY')}</TableCell>
+                                    <TableCell>
+                                        <Select 
+                                            defaultValue={order.status} 
+                                            onValueChange={(newStatus) => handleUpdateStatus(order.id, newStatus as Order['status'])}
+                                        >
+                                            <SelectTrigger className="w-full h-9">
+                                                <SelectValue placeholder="Cambiar estado" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {orderStatuses.map(status => (
+                                                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow><TableCell colSpan={5} className="text-center h-24">No se han realizado pedidos todavía.</TableCell></TableRow>
+                        )}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        </TabsContent>
+      </Tabs>
       
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[625px]">
