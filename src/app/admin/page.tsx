@@ -25,10 +25,12 @@ const productSchema = z.object({
   name: z.string().trim().min(3, 'El nombre debe tener al menos 3 caracteres'),
   description: z.string().trim().min(10, 'La descripción es muy corta'),
   price: z.coerce.number().positive('El precio debe ser un número positivo'),
+  stock: z.coerce.number().int().min(0, 'El stock no puede ser un número negativo.'),
   category: z.string().trim().min(2, 'La categoría es requerida'),
+  condition: z.enum(['Nuevo', 'Usado', 'Reacondicionado']),
+  color: z.string().trim().optional(),
   image: z.string().trim().min(10, 'La URL o Data URI de la imagen es requerida.'),
   imageHint: z.string().trim().max(40, "La pista para la IA no debe exceder dos palabras").optional(),
-  availability: z.enum(['in-stock', 'out-of-stock']),
   onSale: z.boolean().default(false),
 });
 
@@ -47,10 +49,12 @@ export default function AdminPage() {
       name: '',
       description: '',
       price: 0,
+      stock: 1,
       category: '',
+      condition: 'Nuevo',
+      color: '',
       image: '',
       imageHint: '',
-      availability: 'in-stock',
       onSale: false,
     },
   });
@@ -60,8 +64,14 @@ export default function AdminPage() {
   const onSubmit = async (values: z.infer<typeof productSchema>) => {
     setIsSubmitting(true);
     const productsCollection = collection(firestore, 'products');
+
+    const dataToSave = {
+        ...values,
+        imageHint: values.imageHint || undefined,
+        color: values.color || undefined,
+    };
     
-    addDoc(productsCollection, values)
+    addDoc(productsCollection, dataToSave)
       .then(() => {
         toast({
           title: 'Producto Agregado',
@@ -219,28 +229,79 @@ export default function AdminPage() {
                       </FormItem>
                     )}
                   />
-
-                  <FormField
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Precio (Gs.)</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="500000" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="stock"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Stock</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="10" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Categoría</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Ej: Tecnología" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="condition"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Condición</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona una condición" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Nuevo">Nuevo</SelectItem>
+                              <SelectItem value="Usado">Usado</SelectItem>
+                              <SelectItem value="Reacondicionado">Reacondicionado</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                   <FormField
                     control={form.control}
-                    name="price"
+                    name="color"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Precio (Gs.)</FormLabel>
+                        <FormLabel>Color (Opcional)</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="500000" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Categoría</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Ej: Tecnología" {...field} />
+                          <Input placeholder="Ej: Negro, Plateado" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -303,27 +364,6 @@ export default function AdminPage() {
                       />
                   </Card>
 
-                  <FormField
-                    control={form.control}
-                    name="availability"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Disponibilidad</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecciona disponibilidad" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="in-stock">En Stock</SelectItem>
-                            <SelectItem value="out-of-stock">Agotado</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                    <Button type="submit" disabled={isSubmitting || isGeneratingImage || isGeneratingDescription} className="w-full">
                     {isSubmitting ? <Loader2 className="animate-spin" /> : 'Agregar Producto'}
                   </Button>
@@ -345,14 +385,15 @@ export default function AdminPage() {
                     <TableHead>Imagen</TableHead>
                     <TableHead>Nombre</TableHead>
                     <TableHead>Precio</TableHead>
-                    <TableHead>Estado</TableHead>
+                    <TableHead>Stock</TableHead>
+                    <TableHead>Condición</TableHead>
                     <TableHead>Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {productsLoading ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center">Cargando productos...</TableCell>
+                      <TableCell colSpan={6} className="text-center">Cargando productos...</TableCell>
                     </TableRow>
                   ) : products && products.length > 0 ? (
                     products.map((product) => (
@@ -362,7 +403,8 @@ export default function AdminPage() {
                         </TableCell>
                         <TableCell className="font-medium">{product.name}</TableCell>
                         <TableCell>Gs. {product.price.toLocaleString('es-PY')}</TableCell>
-                        <TableCell>{product.availability === 'in-stock' ? 'En Stock' : 'Agotado'}</TableCell>
+                        <TableCell>{product.stock > 0 ? product.stock : 'Agotado'}</TableCell>
+                        <TableCell>{product.condition}</TableCell>
                         <TableCell>
                           <Button variant="outline" size="sm">Editar</Button>
                         </TableCell>
@@ -370,7 +412,7 @@ export default function AdminPage() {
                     ))
                   ) : (
                      <TableRow>
-                      <TableCell colSpan={5} className="text-center h-24">No hay productos. Agrega uno nuevo para empezar.</TableCell>
+                      <TableCell colSpan={6} className="text-center h-24">No hay productos. Agrega uno nuevo para empezar.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>

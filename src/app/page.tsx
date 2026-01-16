@@ -36,9 +36,11 @@ export default function Home() {
     if (category !== 'all') {
       filtered = filtered.filter(p => p.category === category);
     }
-
-    if (availability !== 'all') {
-      filtered = filtered.filter(p => p.availability === availability);
+    
+    if (availability === 'in-stock') {
+      filtered = filtered.filter(p => p.stock > 0);
+    } else if (availability === 'out-of-stock') {
+      filtered = filtered.filter(p => p.stock <= 0);
     }
 
     return [...filtered].sort((a, b) => {

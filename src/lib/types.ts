@@ -7,7 +7,9 @@ export interface Product {
   imageHint?: string;
   category: string;
   onSale?: boolean;
-  availability: 'in-stock' | 'out-of-stock';
+  stock: number;
+  condition: 'Nuevo' | 'Usado' | 'Reacondicionado';
+  color?: string;
 }
 
 export interface CartItem {

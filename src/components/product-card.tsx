@@ -23,6 +23,7 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
   const router = useRouter();
 
   const reviewCount = useMemo(() => Math.floor(Math.random() * 200) + 10, [product.id]);
+  const isInStock = product.stock > 0;
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -78,8 +79,8 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
              {product.onSale && (
               <Badge variant="secondary" className="absolute top-3 right-3">OFERTA</Badge>
             )}
-            <Badge variant={product.availability === 'in-stock' ? 'default' : 'destructive'} className={`absolute bottom-3 left-3 ${product.availability === 'in-stock' ? 'bg-green-600/90 hover:bg-green-700/90' : 'bg-destructive/90'}`}>
-              {product.availability === 'in-stock' ? 'En Stock' : 'Agotado'}
+            <Badge variant={isInStock ? 'default' : 'destructive'} className={`absolute bottom-3 left-3 ${isInStock ? 'bg-green-600/90 hover:bg-green-700/90' : 'bg-destructive/90'}`}>
+              {isInStock ? 'En Stock' : 'Agotado'}
             </Badge>
           </div>
         </CardHeader>
@@ -103,7 +104,7 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
             <Button 
                 className="w-full" 
                 onClick={handleBuyNow}
-                disabled={product.availability === 'out-of-stock'}
+                disabled={!isInStock}
               >
               Comprar Ahora
             </Button>
@@ -111,7 +112,7 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
                 className="w-full" 
                 variant="outline"
                 onClick={handleAddToCart}
-                disabled={product.availability === 'out-of-stock'}
+                disabled={!isInStock}
               >
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Agregar al carrito

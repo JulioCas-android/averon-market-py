@@ -34,9 +34,11 @@
         "imageHint": { "type": "string" },
         "category": { "type": "string" },
         "onSale": { "type": "boolean" },
-        "availability": { "type": "string", "enum": ["in-stock", "out-of-stock"] }
+        "stock": { "type": "number", "description": "Quantity of the product in stock." },
+        "condition": { "type": "string", "enum": ["Nuevo", "Usado", "Reacondicionado"], "description": "The condition of the product." },
+        "color": { "type": "string", "description": "The color of the product." }
       },
-      "required": ["name", "price", "category", "availability", "image"]
+      "required": ["name", "price", "category", "image", "stock", "condition"]
     },
     "Order": {
       "title": "Order",

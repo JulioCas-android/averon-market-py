@@ -69,6 +69,8 @@ export default function ProductDetailPage() {
     notFound();
   }
 
+  const isInStock = product.stock > 0;
+
   const handleAddToCart = () => {
     addItem(product, quantity);
     toast({
@@ -83,10 +85,9 @@ export default function ProductDetailPage() {
   };
   
   const handleQuantityChange = (amount: number) => {
-    setQuantity(prev => Math.max(1, prev + amount));
+    setQuantity(prev => Math.max(1, Math.min(product.stock, prev + amount)));
   }
   
-  // Placeholder data inspired by eBay screenshots
   const soldCount = useMemo(() => Math.floor(Math.random() * 50) + 1, [product.id]);
   const reviewCount = useMemo(() => Math.floor(Math.random() * 200) + 10, [product.id]);
 
@@ -112,6 +113,7 @@ export default function ProductDetailPage() {
         <div className="lg:col-span-2 space-y-6">
           <div>
             <h1 className="text-2xl lg:text-3xl font-bold font-headline">{product.name}</h1>
+            {product.color && <p className="text-sm text-muted-foreground mt-1">Color: {product.color}</p>}
             <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-1 text-yellow-500">
                   <Star className="w-4 h-4 fill-current" />
@@ -129,8 +131,8 @@ export default function ProductDetailPage() {
           
           <div className='space-y-4'>
             <p className="text-4xl font-bold text-primary">Gs. {product.price.toLocaleString('es-PY')}</p>
-            <Badge variant={product.availability === 'in-stock' ? 'default' : 'destructive'} className={product.availability === 'in-stock' ? 'bg-green-600 hover:bg-green-700' : ''}>
-              {product.availability === 'in-stock' ? 'En Stock' : 'Agotado'}
+            <Badge variant={isInStock ? 'default' : 'destructive'} className={isInStock ? 'bg-green-600 hover:bg-green-700' : ''}>
+              {isInStock ? 'En Stock' : 'Agotado'}
             </Badge>
           </div>
           
@@ -143,15 +145,15 @@ export default function ProductDetailPage() {
                     <Minus className="h-4 w-4" />
                   </Button>
                   <span className="w-10 text-center font-bold text-lg">{quantity}</span>
-                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleQuantityChange(1)}>
+                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleQuantityChange(1)} disabled={quantity >= product.stock}>
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-              <Button size="lg" onClick={handleBuyNow} disabled={product.availability === 'out-of-stock'} className="w-full h-12 text-lg">
+              <Button size="lg" onClick={handleBuyNow} disabled={!isInStock} className="w-full h-12 text-lg">
                 Comprar Ahora
               </Button>
-              <Button size="lg" onClick={handleAddToCart} disabled={product.availability === 'out-of-stock'} className="w-full h-12" variant="outline">
+              <Button size="lg" onClick={handleAddToCart} disabled={!isInStock} className="w-full h-12" variant="outline">
                 Agregar al Carrito
               </Button>
               <Button size="lg" disabled className="w-full h-12" variant="ghost">
@@ -190,16 +192,22 @@ export default function ProductDetailPage() {
                     <table className="w-full text-sm">
                         <tbody>
                             <tr className='border-b'>
-                                <td className="py-3 font-medium text-muted-foreground pr-4">Estado</td>
-                                <td className="py-3 font-semibold">Nuevo</td>
+                                <td className="py-3 font-medium text-muted-foreground pr-4">Condición</td>
+                                <td className="py-3 font-semibold">{product.condition}</td>
                             </tr>
                             <tr className='border-b'>
                                 <td className="py-3 font-medium text-muted-foreground pr-4">Categoría</td>
                                 <td className="py-3 font-semibold">{product.category}</td>
                             </tr>
+                             {product.color && (
+                              <tr className='border-b'>
+                                  <td className="py-3 font-medium text-muted-foreground pr-4">Color</td>
+                                  <td className="py-3 font-semibold">{product.color}</td>
+                              </tr>
+                             )}
                             <tr className='border-b'>
-                                <td className="py-3 font-medium text-muted-foreground pr-4">Disponibilidad</td>
-                                <td className="py-3 font-semibold">{product.availability === 'in-stock' ? 'En Stock' : 'Agotado'}</td>
+                                <td className="py-3 font-medium text-muted-foreground pr-4">Stock</td>
+                                <td className="py-3 font-semibold">{isInStock ? `${product.stock} disponibles` : 'Agotado'}</td>
                             </tr>
                              <tr>
                                 <td className="py-3 font-medium text-muted-foreground pr-4">En oferta</td>
