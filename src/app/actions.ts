@@ -7,8 +7,8 @@ export async function sendPersonalizedOfferNotificationAction() {
     // In a real application, you would fetch this data for the logged-in user.
     const mockInput: PersonalizedOfferNotificationInput = {
         userId: 'user-123',
-        browsingHistory: ['Averon Phone X', 'Wireless Headphones', 'Classic Book'],
-        pastPurchases: ['Averon Smartwatch V2', 'Modern Laptop'],
+        browsingHistory: ['Smartphone', 'Auriculares inalámbricos', 'Libro de ficción'],
+        pastPurchases: ['Smartwatch', 'Laptop'],
     };
 
     try {

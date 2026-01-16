@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { products as allProducts } from '@/lib/products';
+import { useDoc, useCollection } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, Truck, ShieldCheck } from 'lucide-react';
@@ -11,6 +11,7 @@ import { useCart } from '@/hooks/use-cart';
 import { useToast } from '@/hooks/use-toast';
 import type { Product } from '@/lib/types';
 import { ProductCard } from '@/components/product-card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -18,14 +19,33 @@ export default function ProductDetailPage() {
   const { addItem } = useCart();
   const { toast } = useToast();
   
-  const product = allProducts.find(p => p.id === id);
+  const { data: product, loading: productLoading } = useDoc<Product>(`products/${id}`);
+  const { data: allProducts } = useCollection<Product>('products');
 
   const relatedProducts = useMemo(() => {
-    if (!product) return [];
+    if (!product || !allProducts) return [];
     return allProducts
       .filter(p => p.category === product.category && p.id !== product.id)
       .slice(0, 4);
-  }, [product]);
+  }, [product, allProducts]);
+
+  if (productLoading) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16 items-start">
+          <Skeleton className="aspect-square w-full rounded-lg" />
+          <div className="space-y-4">
+            <Skeleton className="h-6 w-1/4" />
+            <Skeleton className="h-10 w-3/4" />
+            <Skeleton className="h-6 w-1/3" />
+            <Skeleton className="h-8 w-1/2" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-12 w-1/2" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     notFound();

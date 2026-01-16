@@ -2,23 +2,31 @@
 
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
-import { products as allProducts } from '@/lib/products';
+import { useCollection } from '@/firebase';
 import type { Product } from '@/lib/types';
 import { ProductCard } from '@/components/product-card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Search, ChevronDown, PackageCheck, Truck, ShieldCheck } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
+  const { data: allProducts, loading } = useCollection<Product>('products');
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('all');
   const [availability, setAvailability] = useState('all');
   const [sortBy, setSortBy] = useState('name-asc');
 
-  const categories = useMemo(() => ['all', ...Array.from(new Set(allProducts.map(p => p.category)))], []);
+  const categories = useMemo(() => {
+    if (!allProducts) return ['all'];
+    return ['all', ...Array.from(new Set(allProducts.map(p => p.category)))];
+  }, [allProducts]);
 
   const filteredAndSortedProducts = useMemo(() => {
+    if (!allProducts) return [];
+
     let filtered = allProducts;
 
     if (searchTerm) {
@@ -33,7 +41,7 @@ export default function Home() {
       filtered = filtered.filter(p => p.availability === availability);
     }
 
-    return filtered.sort((a, b) => {
+    return [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'price-asc':
           return a.price - b.price;
@@ -47,8 +55,21 @@ export default function Home() {
           return 0;
       }
     });
-  }, [searchTerm, category, availability, sortBy]);
+  }, [allProducts, searchTerm, category, availability, sortBy]);
 
+  const ProductGridSkeleton = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="flex flex-col space-y-3">
+          <Skeleton className="h-[250px] w-full rounded-xl" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-[200px]" />
+            <Skeleton className="h-4 w-[150px]" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="bg-background">
@@ -143,14 +164,16 @@ export default function Home() {
           </div>
         </div>
 
-        {filteredAndSortedProducts.length > 0 ? (
+        {loading ? (
+          <ProductGridSkeleton />
+        ) : filteredAndSortedProducts && filteredAndSortedProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredAndSortedProducts.map((product: Product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         ) : (
-          <p className="text-center text-muted-foreground py-16">No se encontraron productos que coincidan con su búsqueda.</p>
+          <p className="text-center text-muted-foreground py-16">No se encontraron productos. El administrador puede agregar productos nuevos en el panel de administración.</p>
         )}
       </section>
     </div>
