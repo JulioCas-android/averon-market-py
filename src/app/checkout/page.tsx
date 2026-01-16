@@ -154,7 +154,7 @@ export default function CheckoutPage() {
     };
     
     addDoc(ordersCollection, newOrder)
-    .then(() => {
+    .then((docRef) => {
         clearCart();
         router.push(`/order-confirmation?method=${paymentMethod}`);
     })
