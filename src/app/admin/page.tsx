@@ -27,7 +27,7 @@ const productSchema = z.object({
   price: z.coerce.number().positive('El precio debe ser un número positivo'),
   category: z.string().trim().min(2, 'La categoría es requerida'),
   image: z.string().trim().min(10, 'La URL o Data URI de la imagen es requerida.'),
-  imageHint: z.string().trim().min(2, 'La pista para la IA es requerida').max(40, "La pista para la IA no debe exceder dos palabras"),
+  imageHint: z.string().trim().max(40, "La pista para la IA no debe exceder dos palabras").optional(),
   availability: z.enum(['in-stock', 'out-of-stock']),
   onSale: z.boolean().default(false),
 });
@@ -255,7 +255,7 @@ export default function AdminPage() {
                         name="imageHint"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-sm font-medium">Pista para IA</FormLabel>
+                            <FormLabel className="text-sm font-medium">Pista para IA (Opcional)</FormLabel>
                             <FormControl>
                               <Input placeholder="ej: smartphone moderno, fondo blanco" {...field} />
                             </FormControl>

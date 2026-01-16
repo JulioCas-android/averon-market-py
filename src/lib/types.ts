@@ -4,7 +4,7 @@ export interface Product {
   description: string;
   price: number;
   image: string;
-  imageHint: string;
+  imageHint?: string;
   category: string;
   onSale?: boolean;
   availability: 'in-stock' | 'out-of-stock';
