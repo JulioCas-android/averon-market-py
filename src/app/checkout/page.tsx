@@ -362,11 +362,9 @@ export default function CheckoutPage() {
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                <SelectItem value="TCRD">Pago Online - Tarjeta de Crédito / Débito</SelectItem>
-                                <SelectItem value="QR">Pago Online - Código QR</SelectItem>
-                                <SelectItem value="COOP">Coop. Universitaria - ONLINE hasta 10 Cuotas</SelectItem>
+                                <SelectItem value="ONLINE">Pago Online (Tarjetas y QR)</SelectItem>
                                 <SelectItem value="TRNF">Transferencia Bancaria</SelectItem>
-                                <SelectItem value="TIGO">Tigo Money</SelectItem>
+                                <SelectItem value="EWALLET">Billetera Electrónica (Tigo, Personal, etc.)</SelectItem>
                                 <SelectItem value="COD">Efectivo - Contra Entrega</SelectItem>
                             </SelectContent>
                         </Select>
@@ -432,3 +430,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
