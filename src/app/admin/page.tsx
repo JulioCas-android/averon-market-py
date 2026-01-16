@@ -22,12 +22,12 @@ import Image from 'next/image';
 import { generateProductImageAction } from '@/app/actions';
 
 const productSchema = z.object({
-  name: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
-  description: z.string().min(10, 'La descripción es muy corta'),
+  name: z.string().trim().min(3, 'El nombre debe tener al menos 3 caracteres'),
+  description: z.string().trim().min(10, 'La descripción es muy corta'),
   price: z.coerce.number().positive('El precio debe ser un número positivo'),
-  category: z.string().min(2, 'La categoría es requerida'),
-  image: z.string().min(10, 'La URL o Data URI de la imagen es requerida.'),
-  imageHint: z.string().min(2, 'La pista para la IA es requerida').max(40, "La pista para la IA no debe exceder dos palabras"),
+  category: z.string().trim().min(2, 'La categoría es requerida'),
+  image: z.string().trim().min(10, 'La URL o Data URI de la imagen es requerida.'),
+  imageHint: z.string().trim().min(2, 'La pista para la IA es requerida').max(40, "La pista para la IA no debe exceder dos palabras"),
   availability: z.enum(['in-stock', 'out-of-stock']),
   onSale: z.boolean().default(false),
 });
