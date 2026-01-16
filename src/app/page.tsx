@@ -55,18 +55,9 @@ export default function Home() {
 
   return (
     <div className="bg-background">
-      <section className="relative w-full h-[50vh] min-h-[400px] text-white">
-        <Image
-          src={heroImage.imageUrl}
-          alt={heroImage.description}
-          fill
-          className="object-cover"
-          priority
-          data-ai-hint={heroImage.imageHint}
-        />
-        <div className="absolute inset-0 bg-black/60" />
+      <section className="relative w-full h-[50vh] min-h-[400px] bg-gradient-to-br from-blue-900 via-blue-800 to-orange-700 text-white">
         <div className="relative h-full flex flex-col items-center justify-center text-center p-4">
-          <div className="mb-4 animate-fade-in-down">
+          <div className="mb-8 animate-fade-in-down">
             <Image
               src="https://i.imgur.com/CxlQtxV.png"
               alt="AVERON Market PY Logo"
@@ -75,7 +66,6 @@ export default function Home() {
               priority
             />
           </div>
-          <p className="text-lg md:text-xl max-w-2xl mb-8 animate-fade-in-up">Tecnología y comodidad en un solo lugar.</p>
           <Button size="lg" variant="secondary" className="animate-fade-in-up" asChild>
             <a href="#products">Ver Productos</a>
           </Button>
