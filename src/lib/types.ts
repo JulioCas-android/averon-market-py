@@ -1,0 +1,30 @@
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  imageHint: string;
+  category: string;
+  onSale?: boolean;
+  availability: 'in-stock' | 'out-of-stock';
+}
+
+export interface CartItem {
+  product: Product;
+  quantity: number;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface Order {
+  id: string;
+  date: string;
+  items: CartItem[];
+  total: number;
+  status: 'Paid' | 'Pending Payment' | 'Shipped' | 'Delivered';
+}

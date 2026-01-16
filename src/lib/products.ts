@@ -1,0 +1,137 @@
+import type { Product } from './types';
+import { productImages } from './placeholder-images';
+
+const getImage = (id: string) => {
+    const img = productImages.find(i => i.id === id);
+    if (!img) {
+        return { imageUrl: 'https://placehold.co/600x600', imageHint: 'placeholder' };
+    }
+    return { imageUrl: img.imageUrl, imageHint: img.imageHint };
+}
+
+export const products: Product[] = [
+  {
+    id: '1',
+    name: 'Averon Phone X',
+    description: 'El último smartphone con tecnología de punta, cámara de alta resolución y un diseño elegante. Perfecto para el trabajo y el ocio.',
+    price: 6500000,
+    category: 'Electrónica',
+    onSale: true,
+    availability: 'in-stock',
+    image: getImage('product-1').imageUrl,
+    imageHint: getImage('product-1').imageHint,
+  },
+  {
+    id: '2',
+    name: 'Auriculares Inalámbricos Pro',
+    description: 'Sumérgete en el sonido con cancelación de ruido activa, batería de larga duración y comodidad superior para todo el día.',
+    price: 1250000,
+    category: 'Electrónica',
+    availability: 'in-stock',
+    image: getImage('product-2').imageUrl,
+    imageHint: getImage('product-2').imageHint,
+  },
+  {
+    id: '3',
+    name: 'Averon Smartwatch V2',
+    description: 'Monitorea tu salud, recibe notificaciones y personaliza tu estilo con este reloj inteligente de última generación.',
+    price: 2100000,
+    category: 'Electrónica',
+    availability: 'in-stock',
+    image: getImage('product-3').imageUrl,
+    imageHint: getImage('product-3').imageHint,
+  },
+  {
+    id: '4',
+    name: 'Modern Laptop',
+    description: 'Potencia y portabilidad se unen en este portátil ultraligero, ideal para profesionales y estudiantes en movimiento.',
+    price: 9800000,
+    category: 'Electrónica',
+    onSale: true,
+    availability: 'out-of-stock',
+    image: getImage('product-4').imageUrl,
+    imageHint: getImage('product-4').imageHint,
+  },
+  {
+    id: '5',
+    name: 'Classic Book',
+    description: 'Una obra maestra de la literatura universal en una edición de tapa dura, perfecta para cualquier biblioteca personal.',
+    price: 150000,
+    category: 'Libros',
+    availability: 'in-stock',
+    image: getImage('product-5').imageUrl,
+    imageHint: getImage('product-5').imageHint,
+  },
+  {
+    id: '6',
+    name: 'Colección de Novelas de Ficción',
+    description: 'Un set de tres novelas aclamadas por la crítica que te transportarán a mundos inolvidables.',
+    price: 420000,
+    category: 'Libros',
+    availability: 'in-stock',
+    image: getImage('product-6').imageUrl,
+    imageHint: getImage('product-6').imageHint,
+  },
+  {
+    id: '7',
+    name: 'Taza de Cerámica Elegante',
+    description: 'Disfruta de tu bebida caliente favorita en esta taza de cerámica artesanal con un diseño minimalista y moderno.',
+    price: 95000,
+    category: 'Hogar',
+    availability: 'in-stock',
+    image: getImage('product-7').imageUrl,
+    imageHint: getImage('product-7').imageHint,
+  },
+  {
+    id: '8',
+    name: 'Cojín Decorativo de Lino',
+    description: 'Añade un toque de confort y estilo a tu sala de estar o dormitorio con este cojín de lino suave.',
+    price: 180000,
+    category: 'Hogar',
+    onSale: true,
+    availability: 'in-stock',
+    image: getImage('product-8').imageUrl,
+    imageHint: getImage('product-8').imageHint,
+  },
+   {
+    id: '9',
+    name: 'Cámara Digital Reflex',
+    description: 'Captura momentos inolvidables con calidad profesional gracias a esta cámara digital con sensor de alta resolución.',
+    price: 7500000,
+    category: 'Electrónica',
+    availability: 'in-stock',
+    image: getImage('product-9').imageUrl,
+    imageHint: getImage('product-9').imageHint,
+  },
+  {
+    id: '10',
+    name: 'Set de Cuchillos de Chef',
+    description: 'Equipa tu cocina con este set de cuchillos de acero inoxidable de alta calidad para cortes precisos.',
+    price: 990000,
+    category: 'Hogar',
+    availability: 'out-of-stock',
+    image: getImage('product-10').imageUrl,
+    imageHint: getImage('product-10').imageHint,
+  },
+  {
+    id: '11',
+    name: 'Mochila Urbana Minimalista',
+    description: 'Una mochila versátil y duradera, diseñada para el día a día en la ciudad, con compartimentos para tus dispositivos.',
+    price: 650000,
+    category: 'Accesorios',
+    availability: 'in-stock',
+    image: getImage('product-11').imageUrl,
+    imageHint: getImage('product-11').imageHint,
+  },
+  {
+    id: '12',
+    name: 'Cuadro Abstracto "Amanecer"',
+    description: 'Una pieza de arte única que aportará color y dinamismo a cualquier espacio de tu hogar u oficina.',
+    price: 2300000,
+    category: 'Hogar',
+    availability: 'in-stock',
+    onSale: true,
+    image: getImage('product-12').imageUrl,
+    imageHint: getImage('product-12').imageHint,
+  }
+];

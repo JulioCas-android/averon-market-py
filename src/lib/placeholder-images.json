@@ -1,3 +1,82 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-image",
+      "description": "A bustling modern online marketplace.",
+      "imageUrl": "https://images.unsplash.com/photo-1664455340023-214c33a9d0bd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxvbmxpbmUlMjBzaG9wcGluZ3xlbnwwfHx8fDE3Njg1MzI5ODR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "online shopping"
+    },
+    {
+      "id": "product-1",
+      "description": "A sleek and modern smartphone on a clean background.",
+      "imageUrl": "https://images.unsplash.com/photo-1676173646307-d050e097d181?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxzbWFydHBob25lJTIwdGVjaG5vbG9neXxlbnwwfHx8fDE3Njg0ODQ5MDh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "smartphone technology"
+    },
+    {
+      "id": "product-2",
+      "description": "High-quality wireless over-ear headphones.",
+      "imageUrl": "https://images.unsplash.com/photo-1717084044357-c12d9b62c9cb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxoZWFkcGhvbmVzJTIwbXVzaWN8ZW58MHx8fHwxNzY4NDk3ODI0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "headphones music"
+    },
+    {
+      "id": "product-3",
+      "description": "A stylish and modern smartwatch displaying the time.",
+      "imageUrl": "https://images.unsplash.com/photo-1696688713460-de12ac76ebc6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxzbWFydHdhdGNoJTIwZml0bmVzc3xlbnwwfHx8fDE3Njg0NzQ0NDd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "smartwatch fitness"
+    },
+    {
+      "id": "product-4",
+      "description": "A powerful and lightweight laptop open on a desk.",
+      "imageUrl": "https://images.unsplash.com/photo-1677157561132-4f9e282a1684?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxsYXB0b3AlMjB3b3Jrc3BhY2V8ZW58MHx8fHwxNzY4NDQyMjc0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "laptop workspace"
+    },
+    {
+      "id": "product-5",
+      "description": "A classic hardcover book with a leather cover.",
+      "imageUrl": "https://images.unsplash.com/photo-1512508561942-18fbe6d5d0cf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxib29rJTIwcmVhZGluZ3xlbnwwfHx8fDE3Njg0NjQyNzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "book reading"
+    },
+    {
+      "id": "product-6",
+      "description": "A collection of popular fiction novels.",
+      "imageUrl": "https://images.unsplash.com/photo-1760688352677-7808917e2a10?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxib29rcyUyMGNvbGxlY3Rpb258ZW58MHx8fHwxNzY4NTMyOTg0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "books collection"
+    },
+    {
+      "id": "product-7",
+      "description": "An elegant ceramic coffee mug.",
+      "imageUrl": "https://images.unsplash.com/photo-1630783098843-956335ee5275?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxjb2ZmZWUlMjBtdWd8ZW58MHx8fHwxNzY4NDM1NjQ2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "coffee mug"
+    },
+    {
+      "id": "product-8",
+      "description": "A comfortable and decorative throw pillow.",
+      "imageUrl": "https://images.unsplash.com/photo-1767584394169-cb62eccfe930?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxjdXNoaW9uJTIwaG9tZXxlbnwwfHx8fDE3Njg1MzI5ODR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cushion home"
+    },
+    {
+      "id": "product-9",
+      "description": "A modern digital camera with a lens attached.",
+      "imageUrl": "https://images.unsplash.com/photo-1668037349467-f1b07bb7c442?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxjYW1lcmElMjBwaG90b2dyYXBoeXxlbnwwfHx8fDE3Njg1Mjc4MDd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "camera photography"
+    },
+    {
+      "id": "product-10",
+      "description": "A set of premium kitchen knives on a wooden block.",
+      "imageUrl": "https://images.unsplash.com/photo-1764177406219-2b4bf3dab69c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxraXRjaGVuJTIwa25pdmVzfGVufDB8fHx8MTc2ODUzMjk4NHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "kitchen knives"
+    },
+    {
+      "id": "product-11",
+      "description": "A sleek, minimalist backpack for daily use.",
+      "imageUrl": "https://images.unsplash.com/photo-1673505705676-1cdb1db2273f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxiYWNrcGFjayUyMHRyYXZlbHxlbnwwfHx8fDE3Njg0MTQxOTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "backpack travel"
+    },
+    {
+      "id": "product-12",
+      "description": "A vibrant, abstract painting on a canvas.",
+      "imageUrl": "https://images.unsplash.com/photo-1579541671172-43429ce17aca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxhcnQlMjBwYWludGluZ3xlbnwwfHx8fDE3Njg1MDQxMjJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "art painting"
+    }
+  ]
 }
