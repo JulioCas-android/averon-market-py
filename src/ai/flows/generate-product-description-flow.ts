@@ -17,7 +17,7 @@ const GenerateProductDescriptionInputSchema = z.object({
 export type GenerateProductDescriptionInput = z.infer<typeof GenerateProductDescriptionInputSchema>;
 
 const GenerateProductDescriptionOutputSchema = z.object({
-  description: z.string().describe('A compelling and detailed product description in Spanish, including technical specifications if applicable. Formatted for an e-commerce website.'),
+  description: z.string().describe('A compelling and detailed product description in Spanish, provided as plain text without any Markdown formatting. It should include technical specifications if applicable and be well-structured for an e-commerce website.'),
 });
 export type GenerateProductDescriptionOutput = z.infer<typeof GenerateProductDescriptionOutputSchema>;
 
@@ -36,11 +36,11 @@ const productDescriptionPrompt = ai.definePrompt({
   Producto: {{{productName}}}
 
   Genera una descripción que sea:
-  1.  **Vendedora y Atractiva:** Usa un lenguaje que incite a la compra y destaque los beneficios.
-  2.  **Informativa:** Incluye características clave y especificaciones técnicas relevantes para el producto. Si no conoces el producto, inventa características plausibles y deseables basadas en su nombre.
-  3.  **Bien Estructurada:** Organiza la información de forma clara, con un párrafo introductorio y luego una lista de puntos o características.
+  1.  Vendedora y Atractiva: Usa un lenguaje que incite a la compra y destaque los beneficios.
+  2.  Informativa: Incluye características clave y especificaciones técnicas relevantes para el producto. Si no conoces el producto, inventa características plausibles y deseables basadas en su nombre.
+  3.  Bien Estructurada: Organiza la información de forma clara, con un párrafo introductorio y luego una lista de puntos o características.
   
-  El resultado debe ser un único bloque de texto para el campo de descripción.
+  Importante: El resultado debe ser un único bloque de texto plano. No utilices ningún tipo de formato Markdown (como asteriscos para **negrita** o guiones para listas). Estructura los puntos usando saltos de línea.
   `,
 });
 
