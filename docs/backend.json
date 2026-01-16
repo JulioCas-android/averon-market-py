@@ -2,7 +2,7 @@
   "entities": {
     "UserProfile": {
       "title": "User Profile",
-      "description": "Represents a user's public profile information.",
+      "description": "Represents a user's public profile information for registered users.",
       "type": "object",
       "properties": {
         "name": {
@@ -13,6 +13,11 @@
           "type": "string",
           "format": "email",
           "description": "The user's email address."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["customer", "admin"],
+          "description": "User role for authorization."
         }
       },
       "required": ["name", "email"]
@@ -22,33 +27,52 @@
       "description": "Represents a product in the store.",
       "type": "object",
       "properties": {
-        "name": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "price": {
-          "type": "number"
-        },
-        "image": {
-          "type": "string"
-        },
-        "imageHint": {
-          "type": "string"
-        },
-        "category": {
-          "type": "string"
-        },
-        "onSale": {
-          "type": "boolean"
-        },
-        "availability": {
-          "type": "string",
-          "enum": ["in-stock", "out-of-stock"]
-        }
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "image": { "type": "string" },
+        "imageHint": { "type": "string" },
+        "category": { "type": "string" },
+        "onSale": { "type": "boolean" },
+        "availability": { "type": "string", "enum": ["in-stock", "out-of-stock"] }
       },
       "required": ["name", "price", "category", "availability", "image"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Represents a customer's order, for both guests and registered users.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the registered user, if applicable."
+        },
+        "customerName": { "type": "string" },
+        "customerEmail": { "type": "string", "format": "email" },
+        "shippingAddress": { "type": "string" },
+        "shippingCity": { "type": "string" },
+        "shippingPhone": { "type": "string" },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "productId": { "type": "string" },
+              "name": { "type": "string" },
+              "quantity": { "type": "number" },
+              "price": { "type": "number" }
+            },
+            "required": ["productId", "name", "quantity", "price"]
+          }
+        },
+        "total": { "type": "number" },
+        "status": {
+          "type": "string",
+          "enum": ["Procesando", "Pendiente de Pago", "Pagado", "Enviado", "Entregado", "Cancelado"]
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["customerName", "customerEmail", "shippingAddress", "items", "total", "status", "createdAt"]
     }
   },
   "auth": {
@@ -56,16 +80,16 @@
   },
   "firestore": {
     "/products/{productId}": {
-      "schema": {
-        "$ref": "#/backend/entities/Product"
-      },
+      "schema": { "$ref": "#/backend/entities/Product" },
       "description": "Stores individual product details."
     },
     "/users/{userId}": {
-      "schema": {
-        "$ref": "#/backend/entities/UserProfile"
-      },
+      "schema": { "$ref": "#/backend/entities/UserProfile" },
       "description": "Stores public user profile information, linked to their authentication UID."
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/backend/entities/Order" },
+      "description": "Stores all customer orders."
     }
   }
 }

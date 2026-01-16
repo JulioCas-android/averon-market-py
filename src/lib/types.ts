@@ -19,12 +19,19 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  role?: 'customer' | 'admin';
 }
 
 export interface Order {
   id: string;
+  userId?: string; // For registered users
+  customerName: string;
+  customerEmail: string;
+  shippingAddress: string;
+  shippingCity: string;
+  shippingPhone: string;
   date: string;
   items: CartItem[];
   total: number;
-  status: 'Paid' | 'Pending Payment' | 'Shipped' | 'Delivered';
+  status: 'Procesando' | 'Pendiente de Pago' | 'Pagado' | 'Enviado' | 'Entregado' | 'Cancelado';
 }

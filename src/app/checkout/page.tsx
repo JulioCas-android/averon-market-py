@@ -2,11 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/hooks/use-cart';
-import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,6 +14,7 @@ import Image from 'next/image';
 
 const shippingSchema = z.object({
   name: z.string().min(2, 'El nombre es requerido'),
+  email: z.string().email('El email es requerido'),
   address: z.string().min(5, 'La dirección es requerida'),
   city: z.string().min(2, 'La ciudad es requerida'),
   phone: z.string().min(6, 'El teléfono es requerido'),
@@ -23,13 +22,13 @@ const shippingSchema = z.object({
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
-  const { user } = useAuth();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof shippingSchema>>({
     resolver: zodResolver(shippingSchema),
     defaultValues: {
-      name: user?.name || '',
+      name: '',
+      email: '',
       address: '',
       city: '',
       phone: '',
@@ -47,14 +46,20 @@ export default function CheckoutPage() {
   }
 
   const handleCheckout = (paymentMethod: 'Google Pay' | 'COD') => {
-    // In a real app, you would process payment here.
-    console.log(`Processing order with ${paymentMethod}`);
-    console.log('Shipping details:', form.getValues());
-    console.log('Order items:', items);
+    // In a real app, you would process payment and save the order here.
+    const orderData = {
+      customerInfo: form.getValues(),
+      items: items,
+      total: total,
+      paymentMethod: paymentMethod,
+      status: 'Procesando'
+    };
+
+    console.log('Procesando pedido:', orderData);
     
-    // For COD, you would save to Firestore with 'Pending Payment' status.
+    // For COD, you would save to Firestore with 'Pendiente de pago' status.
     if (paymentMethod === 'COD') {
-      console.log("Order registered in Firestore as 'Pendiente de pago'.");
+      console.log("Pedido registrado en Firestore como 'Pendiente de pago'.");
     }
     
     clearCart();
@@ -73,24 +78,39 @@ export default function CheckoutPage() {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Información de Envío</CardTitle>
+              <CardTitle>Información de Contacto y Envío</CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...form}>
                 <form id="shipping-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nombre Completo</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Tu nombre" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nombre Completo</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Tu nombre" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email de Contacto</FormLabel>
+                          <FormControl>
+                            <Input placeholder="tu@email.com" type="email" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   <FormField
                     control={form.control}
                     name="address"
