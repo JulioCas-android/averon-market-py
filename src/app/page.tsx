@@ -67,7 +67,13 @@ export default function Home() {
         <div className="absolute inset-0 bg-black/60" />
         <div className="relative h-full flex flex-col items-center justify-center text-center p-4">
           <div className="mb-4 animate-fade-in-down">
-            <Logo />
+            <Image
+              src="https://i.imgur.com/CxlQtxV.png"
+              alt="AVERON Market PY Logo"
+              width={400}
+              height={138}
+              priority
+            />
           </div>
           <p className="text-lg md:text-xl max-w-2xl mb-8 animate-fade-in-up">Tecnología y comodidad en un solo lugar.</p>
           <Button size="lg" variant="secondary" className="animate-fade-in-up" asChild>
