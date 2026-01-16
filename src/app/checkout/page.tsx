@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -366,6 +365,7 @@ export default function CheckoutPage() {
                                 <SelectItem value="TRNF">Transferencia Bancaria</SelectItem>
                                 <SelectItem value="EWALLET">Billetera Electrónica (Tigo, Personal, etc.)</SelectItem>
                                 <SelectItem value="COD">Efectivo - Contra Entrega</SelectItem>
+                                <SelectItem value="DOWN_PAYMENT">Pago de seña y saldo contra entrega</SelectItem>
                             </SelectContent>
                         </Select>
                         <FormMessage />
@@ -430,5 +430,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-    
