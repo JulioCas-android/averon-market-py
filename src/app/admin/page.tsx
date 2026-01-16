@@ -16,8 +16,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { Loader2, Sparkles } from 'lucide-react';
-import { useState } from 'react';
+import { Loader2, Sparkles, Upload } from 'lucide-react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { generateProductImageAction, generateProductDescriptionAction } from '@/app/actions';
 
@@ -39,6 +39,7 @@ export default function AdminPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
@@ -106,8 +107,31 @@ export default function AdminPage() {
         toast({
             variant: 'destructive',
             title: 'Error de Generación de Imagen',
-            description: result.message || 'Ocurrió un error inesperado.',
+            description: result.message || 'Ocurrió un error inesperado al generar la imagen.',
         });
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 750 * 1024) { // 750KB limit to be safe with base64 encoding for Firestore
+        toast({
+          variant: 'destructive',
+          title: 'Archivo demasiado grande',
+          description: 'La imagen debe ser menor a 750KB para poder subirla.',
+        });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        form.setValue('image', reader.result as string, { shouldValidate: true });
+        toast({
+          title: 'Imagen Cargada',
+          description: 'La imagen de tu dispositivo ha sido añadida.',
+        });
+      };
+      reader.readAsDataURL(file);
     }
   };
   
@@ -222,45 +246,62 @@ export default function AdminPage() {
                       </FormItem>
                     )}
                   />
-                  <div className="space-y-2">
-                    <FormField
-                      control={form.control}
-                      name="imageHint"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Pista para IA de Imagen</FormLabel>
-                          <FormControl>
-                            <Input placeholder="ej: smartphone moderno" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="button" variant="outline" size="sm" onClick={handleGenerateImage} disabled={isGeneratingImage}>
-                      {isGeneratingImage ? <Loader2 className="animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                      Generar Imagen con IA
-                    </Button>
-                  </div>
+                  
+                  <Card className="bg-muted/50 p-4 space-y-4 border-dashed">
+                      <FormLabel className="text-base font-semibold">Imagen del Producto</FormLabel>
+                      
+                      <FormField
+                        control={form.control}
+                        name="imageHint"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium">Pista para IA</FormLabel>
+                            <FormControl>
+                              <Input placeholder="ej: smartphone moderno, fondo blanco" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                  {imageUrl && (
-                    <div className="border rounded-md p-2">
-                       <Image src={imageUrl} alt="Vista previa de imagen generada" width={100} height={100} className="rounded-md object-cover mx-auto" />
-                    </div>
-                   )}
+                      <div className="flex flex-wrap gap-2">
+                        <Button type="button" variant="outline" size="sm" onClick={handleGenerateImage} disabled={isGeneratingImage}>
+                          {isGeneratingImage ? <Loader2 className="animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                          Generar con IA
+                        </Button>
+                        <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isSubmitting || isGeneratingImage}>
+                          <Upload className="mr-2 h-4 w-4" />
+                          Subir archivo
+                        </Button>
+                        <Input 
+                            ref={fileInputRef}
+                            type="file" 
+                            className="hidden" 
+                            accept="image/png, image/jpeg, image/webp"
+                            onChange={handleFileSelect}
+                        />
+                      </div>
+                      
+                      {imageUrl && (
+                        <div className="border rounded-md p-2 bg-background">
+                           <Image src={imageUrl} alt="Vista previa de imagen generada" width={120} height={120} className="rounded-md object-contain mx-auto aspect-square" />
+                        </div>
+                       )}
 
-                  <FormField
-                    control={form.control}
-                    name="image"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>URL de la Imagen</FormLabel>
-                        <FormControl>
-                          <Textarea placeholder="https://... o genera una con IA." className="min-h-[60px]" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      <FormField
+                        control={form.control}
+                        name="image"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium">URL o Data URI</FormLabel>
+                            <FormControl>
+                              <Textarea placeholder="Genera una con IA, súbela o pega una URL aquí." className="min-h-[80px]" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                  </Card>
 
                   <FormField
                     control={form.control}
