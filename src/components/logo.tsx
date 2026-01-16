@@ -5,12 +5,12 @@ export function Logo() {
   return (
     <Link href="/" className="flex items-center" aria-label="AVERON Market PY Home">
       <Image
-        src="https://i.imgur.com/l67yrrA.png"
+        src="https://i.imgur.com/g8u7bZJ.png"
         alt="AVERON Market PY Logo"
-        width={128}
-        height={34}
+        width={40}
+        height={40}
         priority
-        className="object-contain h-8 w-auto md:h-9"
+        className="object-contain h-8 w-8 md:h-9 md:w-9"
       />
     </Link>
   );
