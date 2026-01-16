@@ -11,10 +11,10 @@ import type { Order } from '@/lib/types';
 import OfferNotification from '@/components/offer-notification';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const mockOrders: Order[] = [
-  { id: 'ORD-001', date: '2024-05-20', total: 2500000, status: 'Entregado', items: [] },
-  { id: 'ORD-002', date: '2024-06-10', total: 750000, status: 'Enviado', items: [] },
-  { id: 'ORD-003', date: '2024-07-01', total: 3200000, status: 'Pagado', items: [] },
+const mockOrders: Omit<Order, 'customerName' | 'customerEmail' | 'shippingAddress' | 'shippingCity' | 'shippingPhone'>[] = [
+  { id: 'ORD-001', createdAt: '2024-05-20T10:00:00Z', total: 2500000, status: 'Entregado', items: [] },
+  { id: 'ORD-002', createdAt: '2024-06-10T11:30:00Z', total: 750000, status: 'Enviado', items: [] },
+  { id: 'ORD-003', createdAt: '2024-07-01T15:45:00Z', total: 3200000, status: 'Pagado', items: [] },
 ];
 
 export default function ProfilePage() {
@@ -103,7 +103,7 @@ export default function ProfilePage() {
                   {mockOrders.map((order) => (
                     <TableRow key={order.id}>
                       <TableCell className="font-medium">{order.id}</TableCell>
-                      <TableCell>{order.date}</TableCell>
+                      <TableCell>{new Date(order.createdAt).toLocaleDateString('es-PY')}</TableCell>
                       <TableCell>{order.status}</TableCell>
                       <TableCell className="text-right">Gs. {order.total.toLocaleString('es-PY')}</TableCell>
                     </TableRow>

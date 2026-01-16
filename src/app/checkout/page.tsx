@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/hooks/use-cart';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import Image from 'next/image';
+import { useAuth, useFirestore } from '@/firebase';
+import { addDoc, collection } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
+import type { Order } from '@/lib/types';
 
 const shippingSchema = z.object({
   name: z.string().min(2, 'El nombre es requerido'),
@@ -23,6 +31,10 @@ const shippingSchema = z.object({
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
   const router = useRouter();
+  const firestore = useFirestore();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const form = useForm<z.infer<typeof shippingSchema>>({
     resolver: zodResolver(shippingSchema),
@@ -35,7 +47,7 @@ export default function CheckoutPage() {
     },
   });
 
-  if (items.length === 0) {
+  if (items.length === 0 && !isProcessing) {
     return (
       <div className="container mx-auto px-4 py-12 text-center">
         <h1 className="text-2xl font-bold">Tu carrito está vacío</h1>
@@ -45,29 +57,63 @@ export default function CheckoutPage() {
     );
   }
 
-  const handleCheckout = (paymentMethod: 'Google Pay' | 'COD') => {
-    // In a real app, you would process payment and save the order here.
-    const orderData = {
-      customerInfo: form.getValues(),
-      items: items,
-      total: total,
-      paymentMethod: paymentMethod,
-      status: 'Procesando'
-    };
-
-    console.log('Procesando pedido:', orderData);
+  const handleCheckout = async (paymentMethod: 'Google Pay' | 'COD') => {
+    setIsProcessing(true);
     
-    // For COD, you would save to Firestore with 'Pendiente de pago' status.
-    if (paymentMethod === 'COD') {
-      console.log("Pedido registrado en Firestore como 'Pendiente de pago'.");
+    if (!firestore) {
+        toast({
+            variant: 'destructive',
+            title: 'Error de conexión',
+            description: 'No se pudo conectar a la base de datos. Inténtalo de nuevo.',
+        });
+        setIsProcessing(false);
+        return;
     }
+
+    const shippingInfo = form.getValues();
+    const ordersCollection = collection(firestore, 'orders');
+
+    const newOrder: Omit<Order, 'id'> = {
+      userId: user?.uid || undefined,
+      customerName: shippingInfo.name,
+      customerEmail: shippingInfo.email,
+      shippingAddress: shippingInfo.address,
+      shippingCity: shippingInfo.city,
+      shippingPhone: shippingInfo.phone,
+      items: items.map(item => ({...item, product: { ...item.product } })), // Ensure plain objects
+      total,
+      status: paymentMethod === 'COD' ? 'Pendiente de Pago' : 'Procesando',
+      createdAt: new Date().toISOString(),
+    };
     
-    clearCart();
-    router.push(`/order-confirmation?method=${paymentMethod}`);
+    // For COD, save to Firestore. For Google Pay, this would be inside the payment success callback.
+    if (paymentMethod === 'COD') {
+        addDoc(ordersCollection, newOrder)
+        .then(() => {
+            clearCart();
+            router.push(`/order-confirmation?method=${paymentMethod}`);
+        })
+        .catch((serverError) => {
+            const permissionError = new FirestorePermissionError({
+            path: ordersCollection.path,
+            operation: 'create',
+            requestResourceData: newOrder,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            setIsProcessing(false);
+        });
+    } else {
+        // Placeholder for Google Pay. In a real app, you'd initiate payment here,
+        // and only run the code above on successful payment.
+        console.log('Simulating Google Pay flow...');
+        clearCart();
+        router.push(`/order-confirmation?method=${paymentMethod}`);
+        //setIsProcessing(false); // This would be in the payment flow
+    }
   };
 
   const onSubmit = () => {
-    // This function is mainly for COD, Google Pay has its own flow.
+    // This function is for COD
     handleCheckout('COD');
   };
 
@@ -91,7 +137,7 @@ export default function CheckoutPage() {
                         <FormItem>
                           <FormLabel>Nombre Completo</FormLabel>
                           <FormControl>
-                            <Input placeholder="Tu nombre" {...field} />
+                            <Input placeholder="Tu nombre" {...field} disabled={isProcessing}/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -104,7 +150,7 @@ export default function CheckoutPage() {
                         <FormItem>
                           <FormLabel>Email de Contacto</FormLabel>
                           <FormControl>
-                            <Input placeholder="tu@email.com" type="email" {...field} />
+                            <Input placeholder="tu@email.com" type="email" {...field} disabled={isProcessing}/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -118,7 +164,7 @@ export default function CheckoutPage() {
                       <FormItem>
                         <FormLabel>Dirección</FormLabel>
                         <FormControl>
-                          <Input placeholder="Calle, número, etc." {...field} />
+                          <Input placeholder="Calle, número, etc." {...field} disabled={isProcessing}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -132,7 +178,7 @@ export default function CheckoutPage() {
                         <FormItem>
                           <FormLabel>Ciudad</FormLabel>
                           <FormControl>
-                            <Input placeholder="Tu ciudad" {...field} />
+                            <Input placeholder="Tu ciudad" {...field} disabled={isProcessing}/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -145,7 +191,7 @@ export default function CheckoutPage() {
                         <FormItem>
                           <FormLabel>Teléfono de Contacto</FormLabel>
                           <FormControl>
-                            <Input placeholder="Tu número de teléfono" type="tel" {...field} />
+                            <Input placeholder="Tu número de teléfono" type="tel" {...field} disabled={isProcessing}/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -185,11 +231,12 @@ export default function CheckoutPage() {
                <Button 
                 variant="secondary" 
                 className="w-full bg-black text-white hover:bg-gray-800" 
-                onClick={() => form.formState.isValid ? handleCheckout('Google Pay') : form.trigger()}>
-                Pagar con Google Pay
+                onClick={() => form.formState.isValid ? handleCheckout('Google Pay') : form.trigger()}
+                disabled={isProcessing}>
+                  {isProcessing ? <Loader2 className="animate-spin" /> : 'Pagar con Google Pay'}
               </Button>
-              <Button form="shipping-form" type="submit" className="w-full">
-                Pagar Contra Entrega
+              <Button form="shipping-form" type="submit" className="w-full" disabled={isProcessing}>
+                {isProcessing ? <Loader2 className="animate-spin" /> : 'Pagar Contra Entrega'}
               </Button>
             </CardFooter>
           </Card>

@@ -30,7 +30,7 @@ export interface Order {
   shippingAddress: string;
   shippingCity: string;
   shippingPhone: string;
-  date: string;
+  createdAt: string;
   items: CartItem[];
   total: number;
   status: 'Procesando' | 'Pendiente de Pago' | 'Pagado' | 'Enviado' | 'Entregado' | 'Cancelado';
