@@ -39,4 +39,6 @@ export interface Order {
   status: 'Procesando' | 'Pendiente de Pago' | 'Pagado' | 'Enviado' | 'Entregado' | 'Cancelado';
   paymentMethod: string;
   thirdPartyReceiver: boolean;
+  thirdPartyName?: string;
+  thirdPartyId?: string;
 }

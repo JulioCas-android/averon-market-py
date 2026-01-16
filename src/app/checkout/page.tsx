@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/hooks/use-cart';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useForm, type FieldPath } from 'react-hook-form';
@@ -37,6 +37,8 @@ const checkoutSchema = z.object({
   // Step 3
   paymentMethod: z.string({ required_error: 'Debes seleccionar un método de pago.' }).min(1, 'Debes seleccionar un método de pago.'),
   thirdPartyReceiver: z.boolean().default(false),
+  thirdPartyName: z.string().optional(),
+  thirdPartyId: z.string().optional(),
 }).superRefine((data, ctx) => {
   if (data.deliveryOption === 'delivery') {
     if (data.address.trim().length < 5) {
@@ -44,6 +46,22 @@ const checkoutSchema = z.object({
     }
     if (data.city.trim().length < 2) {
       ctx.addIssue({ code: 'custom', path: ['city'], message: 'La ciudad es requerida.' });
+    }
+  }
+  if (data.thirdPartyReceiver) {
+    if (!data.thirdPartyName || data.thirdPartyName.trim().length < 3) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['thirdPartyName'],
+        message: 'El nombre completo del tercero es requerido.',
+      });
+    }
+    if (!data.thirdPartyId || data.thirdPartyId.trim().length < 5) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['thirdPartyId'],
+        message: 'El número de cédula del tercero es requerido.',
+      });
     }
   }
 });
@@ -79,6 +97,8 @@ export default function CheckoutPage() {
       phone: '',
       paymentMethod: '',
       thirdPartyReceiver: false,
+      thirdPartyName: '',
+      thirdPartyId: '',
     },
   });
 
@@ -93,6 +113,8 @@ export default function CheckoutPage() {
   }, [user, form]);
 
   const deliveryOption = form.watch('deliveryOption');
+  const thirdPartyReceiver = form.watch('thirdPartyReceiver');
+  const paymentMethod = form.watch('paymentMethod');
 
   if (items.length === 0 && !isProcessing) {
     return (
@@ -160,6 +182,10 @@ export default function CheckoutPage() {
       createdAt: new Date().toISOString(),
       paymentMethod: formValues.paymentMethod,
       thirdPartyReceiver: formValues.thirdPartyReceiver,
+      ...(formValues.thirdPartyReceiver && { 
+        thirdPartyName: formValues.thirdPartyName, 
+        thirdPartyId: formValues.thirdPartyId 
+      }),
     };
     
     addDoc(ordersCollection, newOrder)
@@ -265,7 +291,7 @@ export default function CheckoutPage() {
                         <p>Puede ser retirado de la tienda <strong>AVERON Market</strong> 3 horas después de recibir el mensaje con tu número de <strong>FACTURA</strong>, vía WhatsApp.</p>
                         <div>
                           <h4 className="font-semibold text-foreground">Dirección:</h4>
-                          <p>Avda. Eusebio Ayala e/ Prof. Sergio Conradi. <a href="#" className="text-primary underline">Ver mapa</a></p>
+                          <p>Avda. Eusebio Ayala e/ Prof. Sergio Conradi. <a href="https://maps.app.goo.gl/gD9g2y2q8g9H3jA88" target="_blank" rel="noopener noreferrer" className="text-primary underline">Ver mapa</a></p>
                         </div>
                         <div>
                           <h4 className="font-semibold text-foreground">Horarios de Atención:</h4>
@@ -372,6 +398,34 @@ export default function CheckoutPage() {
                       </FormItem>
                     )}
                   />
+
+                  {paymentMethod === 'TRNF' && (
+                    <Card className="p-4 bg-muted/30">
+                        <CardHeader className="p-0 pb-2">
+                            <CardTitle className="text-base">Datos para Transferencia</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0 text-sm space-y-1">
+                            <p><strong>Banco:</strong> Banco GNB Paraguay S.A.</p>
+                            <p><strong>Cuenta:</strong> 001-123456-7</p>
+                            <p><strong>Titular:</strong> AVERON Market PY</p>
+                            <p><strong>RUC:</strong> 80012345-6</p>
+                            <p className="mt-2 text-muted-foreground">Una vez realizada la transferencia, envía el comprobante a nuestro WhatsApp para confirmar tu pedido.</p>
+                        </CardContent>
+                    </Card>
+                  )}
+
+                  {paymentMethod === 'EWALLET' && (
+                    <Card className="p-4 bg-muted/30">
+                        <CardHeader className="p-0 pb-2">
+                            <CardTitle className="text-base">Datos para Billetera Electrónica</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0 text-sm space-y-1">
+                             <p><strong>Número Tigo Money:</strong> 0981-123456</p>
+                             <p><strong>Número Personal:</strong> 0971-654321</p>
+                             <p className="mt-2 text-muted-foreground">Envía el comprobante de tu pago a nuestro WhatsApp para confirmar tu pedido.</p>
+                        </CardContent>
+                    </Card>
+                  )}
                   
                   <div>
                     <h3 className="text-lg font-semibold mb-2">Totales</h3>
@@ -407,6 +461,44 @@ export default function CheckoutPage() {
                       </FormItem>
                     )}
                   />
+
+                  {thirdPartyReceiver && (
+                    <Card className="p-4 bg-muted/50 border-dashed">
+                      <h4 className="font-semibold mb-2 text-foreground">Autorización</h4>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Favor complete los datos de la persona que recibirá o retirará los productos, en caso de ser un tercero.
+                      </p>
+                      <div className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="thirdPartyName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nombre completo</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Nombre del tercero" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="thirdPartyId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Número de cédula</FormLabel>
+                              <FormControl>
+                                <Input placeholder="C.I. del tercero" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </Card>
+                  )}
+
                 </CardContent>
               )}
           </Card>

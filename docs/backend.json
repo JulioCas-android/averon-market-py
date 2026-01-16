@@ -81,6 +81,14 @@
         "thirdPartyReceiver": {
           "type": "boolean",
           "description": "Indicates if a third party will receive the order."
+        },
+        "thirdPartyName": {
+          "type": "string",
+          "description": "The full name of the third-party receiver."
+        },
+        "thirdPartyId": {
+          "type": "string",
+          "description": "The ID number of the third-party receiver."
         }
       },
       "required": ["customerRazonSocial", "customerRuc", "customerEmail", "shippingAddress", "items", "total", "status", "createdAt", "paymentMethod", "thirdPartyReceiver"]
