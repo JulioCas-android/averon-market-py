@@ -255,7 +255,7 @@ export default function CheckoutPage() {
                                 <RadioGroupItem value="delivery" id="delivery"/>
                             </FormControl>
                             <FormLabel htmlFor="delivery" className="font-normal text-base cursor-pointer">
-                                Quiero agregar una nueva dirección
+                                Envío a domicilio
                             </FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0 rounded-md border p-4 cursor-pointer hover:bg-muted/50">
@@ -263,7 +263,7 @@ export default function CheckoutPage() {
                                 <RadioGroupItem value="pickup" id="pickup"/>
                             </FormControl>
                             <FormLabel htmlFor="pickup" className="font-normal text-base cursor-pointer">
-                                Prefiero pasar por la tienda (Asunción)
+                                Retiro en tienda (Asunción)
                             </FormLabel>
                         </FormItem>
                     </RadioGroup>
