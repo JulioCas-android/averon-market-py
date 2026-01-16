@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { Order } from '@/lib/types';
 import OfferNotification from '@/components/offer-notification';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const mockOrders: Order[] = [
   { id: 'ORD-001', date: '2024-05-20', total: 2500000, status: 'Entregado', items: [] },
@@ -17,34 +18,64 @@ const mockOrders: Order[] = [
 ];
 
 export default function ProfilePage() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!user) {
+    if (!loading && !user) {
       router.push('/login');
     }
-  }, [user, router]);
+  }, [user, loading, router]);
 
-  if (!user) {
-    return null; // or a loading spinner
-  }
-
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.push('/');
   };
+
+  if (loading || !user) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="flex flex-col md:flex-row items-center justify-between mb-8">
+          <div className="flex items-center gap-4 mb-4 md:mb-0">
+            <Skeleton className="h-20 w-20 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-48" />
+              <Skeleton className="h-6 w-64" />
+            </div>
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+                <Card>
+                    <CardHeader>
+                        <Skeleton className="h-7 w-40" />
+                        <Skeleton className="h-5 w-60 mt-2" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="h-40 w-full" />
+                    </CardContent>
+                </Card>
+            </div>
+            <div className="space-y-8">
+                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-32 w-full" />
+            </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col md:flex-row items-center justify-between mb-8">
         <div className="flex items-center gap-4 mb-4 md:mb-0">
           <Avatar className="h-20 w-20">
-            <AvatarImage src={`https://i.pravatar.cc/150?u=${user.email}`} />
-            <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+            <AvatarImage src={user.photoURL || `https://i.pravatar.cc/150?u=${user.email}`} />
+            <AvatarFallback>{user.displayName?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="text-3xl font-bold">{user.name}</h1>
+            <h1 className="text-3xl font-bold">{user.displayName}</h1>
             <p className="text-muted-foreground">{user.email}</p>
           </div>
         </div>

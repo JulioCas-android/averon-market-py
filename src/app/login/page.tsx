@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { Logo } from '@/components/logo';
+import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -22,6 +24,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -31,10 +34,10 @@ export default function LoginPage() {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof loginSchema>) => {
+  const onSubmit = async (values: z.infer<typeof loginSchema>) => {
+    setIsLoading(true);
     try {
-      // In a real app, this would be an API call
-      login(values.email, values.password);
+      await login(values.email, values.password);
       toast({
         title: 'Inicio de Sesión Exitoso',
         description: 'Bienvenido de nuevo.',
@@ -46,6 +49,8 @@ export default function LoginPage() {
         title: 'Error de Inicio de Sesión',
         description: 'Credenciales incorrectas. Por favor, inténtalo de nuevo.',
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -69,7 +74,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="tu@email.com" {...field} />
+                      <Input placeholder="tu@email.com" {...field} disabled={isLoading} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -82,14 +87,14 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Contraseña</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input type="password" placeholder="••••••••" {...field} disabled={isLoading} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Ingresar
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? <Loader2 className="animate-spin" /> : 'Ingresar'}
               </Button>
             </form>
           </Form>

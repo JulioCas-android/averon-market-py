@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { Logo } from '@/components/logo';
+import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 const signupSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -23,6 +25,7 @@ export default function SignupPage() {
   const { register } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
@@ -33,21 +36,23 @@ export default function SignupPage() {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof signupSchema>) => {
+  const onSubmit = async (values: z.infer<typeof signupSchema>) => {
+    setIsLoading(true);
     try {
-      // In a real app, this would be an API call
-      register(values.name, values.email, values.password);
+      await register(values.name, values.email, values.password);
       toast({
         title: 'Registro Exitoso',
         description: 'Tu cuenta ha sido creada.',
       });
       router.push('/profile');
-    } catch (error) {
+    } catch (error: any) {
        toast({
         variant: 'destructive',
         title: 'Error de Registro',
-        description: 'No se pudo crear la cuenta. Es posible que el email ya esté en uso.',
+        description: error.code === 'auth/email-already-in-use' ? 'Este correo electrónico ya está en uso.' : 'No se pudo crear la cuenta. Por favor, inténtalo de nuevo.',
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -71,7 +76,7 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Nombre Completo</FormLabel>
                     <FormControl>
-                      <Input placeholder="Tu nombre" {...field} />
+                      <Input placeholder="Tu nombre" {...field} disabled={isLoading} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -84,7 +89,7 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="tu@email.com" {...field} />
+                      <Input placeholder="tu@email.com" {...field} disabled={isLoading} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -97,14 +102,14 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Contraseña</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input type="password" placeholder="••••••••" {...field} disabled={isLoading} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Registrarse
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? <Loader2 className="animate-spin" /> : 'Registrarse'}
               </Button>
             </form>
           </Form>
