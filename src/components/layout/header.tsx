@@ -14,9 +14,9 @@ import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '../u
 
 const NavLinks = ({ onLinkClick }: { onLinkClick?: () => void }) => (
   <>
-    <Link href="/#products" onClick={onLinkClick} className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">{"Productos"}</Link>
-    <Link href="/about" onClick={onLinkClick} className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">{"Sobre Nosotros"}</Link>
-    <Link href="/contact" onClick={onLinkClick} className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">{"Contacto"}</Link>
+    <Link href="/#products" onClick={onLinkClick} className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Productos</Link>
+    <Link href="/about" onClick={onLinkClick} className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Sobre Nosotros</Link>
+    <Link href="/contact" onClick={onLinkClick} className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Contacto</Link>
   </>
 );
 
