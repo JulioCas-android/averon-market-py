@@ -5,7 +5,7 @@ export function Logo() {
   return (
     <Link href="/" className="flex items-center" aria-label="AVERON Market PY Home">
       <Image
-        src="https://i.imgur.com/g8u7bZJ.png"
+        src="https://i.imgur.com/UpxHMxI.png"
         alt="AVERON Market PY Logo"
         width={40}
         height={40}

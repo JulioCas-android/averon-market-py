@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   themeColor: '#0B57D0',
   icons: {
-    icon: 'https://i.imgur.com/g8u7bZJ.png',
-    apple: 'https://i.imgur.com/g8u7bZJ.png',
+    icon: 'https://i.imgur.com/UpxHMxI.png',
+    apple: 'https://i.imgur.com/UpxHMxI.png',
   },
 };
 
