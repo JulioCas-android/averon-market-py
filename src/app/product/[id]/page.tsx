@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { notFound, useParams } from 'next/navigation';
+import { notFound, useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useDoc, useCollection } from '@/firebase';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProductDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const { addItem } = useCart();
   const { toast } = useToast();
@@ -40,7 +41,7 @@ export default function ProductDetailPage() {
             <Skeleton className="h-6 w-1/3" />
             <Skeleton className="h-8 w-1/2" />
             <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-12 w-1/2" />
+            <Skeleton className="h-12 w-full" />
           </div>
         </div>
       </div>
@@ -57,6 +58,11 @@ export default function ProductDetailPage() {
       title: 'Producto agregado',
       description: `${product.name} fue agregado a tu carrito.`,
     });
+  };
+
+  const handleBuyNow = () => {
+    addItem(product);
+    router.push('/checkout');
   };
 
   return (
@@ -95,14 +101,25 @@ export default function ProductDetailPage() {
             </Badge>
           </div>
 
-          <Button 
-            size="lg" 
-            onClick={handleAddToCart} 
-            disabled={product.availability === 'out-of-stock'}
-            className="w-full md:w-auto"
-          >
-            Agregar al Carrito
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button 
+              size="lg" 
+              onClick={handleAddToCart} 
+              disabled={product.availability === 'out-of-stock'}
+              className="w-full"
+              variant="outline"
+            >
+              Agregar al Carrito
+            </Button>
+            <Button 
+              size="lg" 
+              onClick={handleBuyNow} 
+              disabled={product.availability === 'out-of-stock'}
+              className="w-full"
+            >
+              Comprar Ahora
+            </Button>
+          </div>
 
            <div className="mt-8 space-y-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-3">
