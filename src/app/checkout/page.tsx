@@ -13,11 +13,11 @@ import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import Image from 'next/image';
 import { useAuth, useFirestore } from '@/firebase';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, type DocumentReference } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowRight, Check } from 'lucide-react';
+import { Loader2, ArrowRight, Check, MapPin } from 'lucide-react';
 import type { Order } from '@/lib/types';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -177,9 +177,13 @@ export default function CheckoutPage() {
     };
     
     addDoc(ordersCollection, newOrder)
-    .then((docRef) => {
+    .then((docRef: DocumentReference) => {
         clearCart();
-        router.push(`/order-confirmation?method=${formValues.paymentMethod}`);
+        if (formValues.paymentMethod === 'ONLINE') {
+            router.push(`/pagopar-redirect?orderId=${docRef.id}`);
+        } else {
+            router.push(`/order-confirmation?method=${formValues.paymentMethod}&orderId=${docRef.id}`);
+        }
     })
     .catch((serverError) => {
         const permissionError = new FirestorePermissionError({
@@ -248,6 +252,10 @@ export default function CheckoutPage() {
                                 <FormMessage />
                             </FormItem>
                         )}/>
+                         <Button variant="link" className="p-0 h-auto">
+                            <MapPin className="mr-2" />
+                            Agregar en el mapa
+                        </Button>
                     </div>
                 </CardContent>
             ) : (
