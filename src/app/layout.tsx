@@ -9,6 +9,12 @@ import { Toaster } from '@/components/ui/toaster';
 export const metadata: Metadata = {
   title: 'AVERON Market PY',
   description: 'Tecnología y comodidad en un solo lugar.',
+  manifest: '/manifest.json',
+  themeColor: '#0B57D0',
+  icons: {
+    icon: 'https://i.imgur.com/l67yrrA.png',
+    apple: 'https://i.imgur.com/l67yrrA.png',
+  },
 };
 
 export default function RootLayout({
