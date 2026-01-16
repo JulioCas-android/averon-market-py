@@ -19,7 +19,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { Loader2, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import Image from 'next/image';
-import { generateProductImageAction } from '@/app/actions';
+import { generateProductImageAction, generateProductDescriptionAction } from '@/app/actions';
 
 const productSchema = z.object({
   name: z.string().trim().min(3, 'El nombre debe tener al menos 3 caracteres'),
@@ -38,6 +38,7 @@ export default function AdminPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
 
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
@@ -104,7 +105,37 @@ export default function AdminPage() {
     } else {
         toast({
             variant: 'destructive',
-            title: 'Error de Generación',
+            title: 'Error de Generación de Imagen',
+            description: result.message || 'Ocurrió un error inesperado.',
+        });
+    }
+  };
+  
+  const handleGenerateDescription = async () => {
+    const productName = form.getValues('name');
+    if (!productName) {
+        toast({
+            variant: 'destructive',
+            title: 'Nombre Requerido',
+            description: 'Por favor, ingresa un nombre de producto antes de generar la descripción.',
+        });
+        return;
+    }
+
+    setIsGeneratingDescription(true);
+    const result = await generateProductDescriptionAction(productName);
+    setIsGeneratingDescription(false);
+
+    if (result.success && result.description) {
+        form.setValue('description', result.description, { shouldValidate: true });
+        toast({
+            title: 'Descripción Generada',
+            description: 'La descripción ha sido generada y añadida al formulario.',
+        });
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'Error de Generación de Descripción',
             description: result.message || 'Ocurrió un error inesperado.',
         });
     }
@@ -138,19 +169,33 @@ export default function AdminPage() {
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Descripción</FormLabel>
+                        <div className="flex justify-between items-center mb-2">
+                            <FormLabel>Descripción</FormLabel>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={handleGenerateDescription}
+                                disabled={isGeneratingDescription || !form.watch('name')}
+                            >
+                                {isGeneratingDescription ? <Loader2 className="animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                Generar con IA
+                            </Button>
+                        </div>
                         <FormControl>
-                          <Textarea placeholder="Describe el producto..." {...field} />
+                          <Textarea placeholder="Describe el producto o genera uno con IA usando el nombre." {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="price"
@@ -193,7 +238,7 @@ export default function AdminPage() {
                     />
                     <Button type="button" variant="outline" size="sm" onClick={handleGenerateImage} disabled={isGeneratingImage}>
                       {isGeneratingImage ? <Loader2 className="animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                      Generar con IA
+                      Generar Imagen con IA
                     </Button>
                   </div>
 
@@ -238,7 +283,7 @@ export default function AdminPage() {
                       </FormItem>
                     )}
                   />
-                   <Button type="submit" disabled={isSubmitting || isGeneratingImage} className="w-full">
+                   <Button type="submit" disabled={isSubmitting || isGeneratingImage || isGeneratingDescription} className="w-full">
                     {isSubmitting ? <Loader2 className="animate-spin" /> : 'Agregar Producto'}
                   </Button>
                 </form>

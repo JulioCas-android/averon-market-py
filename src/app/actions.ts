@@ -3,6 +3,7 @@
 
 import { sendPersonalizedOfferNotification, PersonalizedOfferNotificationInput } from '@/ai/flows/personalized-offer-notifications';
 import { generateImage, GenerateImageInput } from '@/ai/flows/generate-image-flow';
+import { generateProductDescription, GenerateProductDescriptionInput } from '@/ai/flows/generate-product-description-flow';
 
 export async function sendPersonalizedOfferNotificationAction() {
     // In a real application, you would fetch this data for the logged-in user.
@@ -31,8 +32,26 @@ export async function generateProductImageAction(prompt: string) {
     try {
         const result = await generateImage(input);
         return { success: true, imageUrl: result.imageUrl };
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error generating product image:', error);
-        return { success: false, message: 'No se pudo generar la imagen en este momento.' };
+        const errorMessage = error.message || 'Ocurrió un error inesperado al generar la imagen.';
+        return { success: false, message: `Error de IA: ${errorMessage}` };
+    }
+}
+
+export async function generateProductDescriptionAction(productName: string) {
+    if (!productName) {
+        return { success: false, message: 'El nombre del producto no puede estar vacío.' };
+    }
+
+    const input: GenerateProductDescriptionInput = { productName };
+
+    try {
+        const result = await generateProductDescription(input);
+        return { success: true, description: result.description };
+    } catch (error: any) {
+        console.error('Error generating product description:', error);
+        const errorMessage = error.message || 'Ocurrió un error desconocido.';
+        return { success: false, message: `No se pudo generar la descripción: ${errorMessage}` };
     }
 }
