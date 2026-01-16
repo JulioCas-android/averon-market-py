@@ -112,7 +112,12 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Contraseña</FormLabel>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Contraseña</FormLabel>
+                       <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+                        ¿Olvidaste tu contraseña?
+                      </Link>
+                    </div>
                     <FormControl>
                       <Input type="password" placeholder="••••••••" {...field} disabled={isLoading} />
                     </FormControl>
