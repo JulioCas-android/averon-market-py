@@ -8,7 +8,7 @@ import { ProductCard } from '@/components/product-card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Search, ChevronDown, PackageCheck, Truck, ShieldCheck } from 'lucide-react';
+import { Search, PackageCheck, Truck, ShieldCheck } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
@@ -75,23 +75,24 @@ export default function Home() {
 
   return (
     <div className="bg-background">
-      <section className="relative w-full flex justify-center py-12 md:py-16">
-        <div className="flex flex-col items-center text-center">
-          <div className="mb-8 animate-fade-in-down">
-            <Image
-              src="https://i.imgur.com/Hj82IwR.png"
-              alt="AVERON Market PY Logo"
-              width={400}
-              height={70}
-              priority
-              className="object-contain"
-            />
-          </div>
-          <Button size="lg" variant="secondary" className="animate-fade-in-up" asChild>
-            <a href="#products">Ver Productos</a>
-          </Button>
+      <section className="relative w-full bg-muted/30">
+        <div className="container mx-auto flex justify-center py-4">
+          <Image
+            src="https://i.imgur.com/Hj82IwR.png"
+            alt="AVERON Market PY Banner"
+            width={800}
+            height={140}
+            priority
+            className="object-contain"
+          />
         </div>
       </section>
+      
+      <div className="container mx-auto text-center py-6">
+        <Button size="lg" variant="secondary" asChild>
+          <a href="#products">Ver Productos</a>
+        </Button>
+      </div>
       
       <section className="container mx-auto pb-12 px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
