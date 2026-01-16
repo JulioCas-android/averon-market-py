@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { products as allProducts } from '@/lib/products';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 import type { Product } from '@/lib/types';
 import { ProductCard } from '@/components/product-card';
 
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
+export default function ProductDetailPage() {
+  const params = useParams<{ id: string }>();
   const { addItem } = useCart();
   const { toast } = useToast();
   
