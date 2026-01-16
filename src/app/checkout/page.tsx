@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -20,14 +19,27 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import type { Order } from '@/lib/types';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
-const shippingSchema = z.object({
+
+const checkoutSchema = z.object({
   name: z.string().min(2, 'El nombre es requerido'),
-  email: z.string().email('El email es requerido'),
-  address: z.string().min(5, 'La dirección es requerida'),
-  city: z.string().min(2, 'La ciudad es requerida'),
+  email: z.string().email('El email es inválido'),
   phone: z.string().min(6, 'El teléfono es requerido'),
+  address: z.string(),
+  city: z.string(),
+  deliveryOption: z.enum(['delivery', 'pickup']).default('delivery')
+}).superRefine((data, ctx) => {
+  if (data.deliveryOption === 'delivery') {
+    if (data.address.trim().length < 5) {
+      ctx.addIssue({ code: 'custom', path: ['address'], message: 'La dirección completa es requerida.' });
+    }
+    if (data.city.trim().length < 2) {
+      ctx.addIssue({ code: 'custom', path: ['city'], message: 'La ciudad es requerida.' });
+    }
+  }
 });
+
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
@@ -37,16 +49,19 @@ export default function CheckoutPage() {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const form = useForm<z.infer<typeof shippingSchema>>({
-    resolver: zodResolver(shippingSchema),
+  const form = useForm<z.infer<typeof checkoutSchema>>({
+    resolver: zodResolver(checkoutSchema),
     defaultValues: {
       name: '',
       email: '',
       address: '',
       city: '',
       phone: '',
+      deliveryOption: 'delivery',
     },
   });
+
+  const deliveryOption = form.watch('deliveryOption');
 
   if (items.length === 0 && !isProcessing) {
     return (
@@ -59,7 +74,17 @@ export default function CheckoutPage() {
   }
 
   const handleCheckout = async (paymentMethod: 'Google Pay' | 'COD') => {
-    setIsProcessing(true);
+      const isValid = await form.trigger();
+      if (!isValid) {
+        toast({
+            variant: 'destructive',
+            title: 'Formulario incompleto',
+            description: 'Por favor, completa los campos requeridos antes de continuar.',
+        });
+        return;
+      }
+
+      setIsProcessing(true);
     
     if (!firestore) {
         toast({
@@ -71,178 +96,176 @@ export default function CheckoutPage() {
         return;
     }
 
-    const shippingInfo = form.getValues();
+    const formValues = form.getValues();
     const ordersCollection = collection(firestore, 'orders');
 
     const newOrder: Omit<Order, 'id'> = {
       ...(user && { userId: user.uid }),
-      customerName: shippingInfo.name,
-      customerEmail: shippingInfo.email,
-      shippingAddress: shippingInfo.address,
-      shippingCity: shippingInfo.city,
-      shippingPhone: shippingInfo.phone,
-      items: items.map(item => ({...item, product: { ...item.product } })), // Ensure plain objects
+      customerName: formValues.name,
+      customerEmail: formValues.email,
+      shippingAddress: deliveryOption === 'delivery' ? formValues.address : 'Retiro en tienda',
+      shippingCity: deliveryOption === 'delivery' ? formValues.city : 'Asunción',
+      shippingPhone: formValues.phone,
+      items: items.map(item => ({ ...item, product: { ...item.product } })), // Ensure plain objects
       total,
       status: paymentMethod === 'COD' ? 'Pendiente de Pago' : 'Procesando',
       createdAt: new Date().toISOString(),
     };
     
-    // For COD, save to Firestore. For Google Pay, this would be inside the payment success callback.
-    if (paymentMethod === 'COD') {
-        addDoc(ordersCollection, newOrder)
-        .then(() => {
-            clearCart();
-            router.push(`/order-confirmation?method=${paymentMethod}`);
-        })
-        .catch((serverError) => {
-            const permissionError = new FirestorePermissionError({
-            path: ordersCollection.path,
-            operation: 'create',
-            requestResourceData: newOrder,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            setIsProcessing(false);
-        });
-    } else {
-        // Placeholder for Google Pay. In a real app, you'd initiate payment here,
-        // and only run the code above on successful payment.
-        console.log('Simulating Google Pay flow...');
+    addDoc(ordersCollection, newOrder)
+    .then(() => {
         clearCart();
         router.push(`/order-confirmation?method=${paymentMethod}`);
-        //setIsProcessing(false); // This would be in the payment flow
-    }
+    })
+    .catch((serverError) => {
+        const permissionError = new FirestorePermissionError({
+        path: ordersCollection.path,
+        operation: 'create',
+        requestResourceData: newOrder,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        setIsProcessing(false);
+    });
   };
 
   const onSubmit = () => {
-    // This function is for COD
     handleCheckout('COD');
   };
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto max-w-2xl px-4 py-12">
       <h1 className="text-3xl font-bold mb-8 text-center">Finalizar Compra</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Información de Contacto y Envío</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form id="shipping-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nombre Completo</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Tu nombre" {...field} disabled={isProcessing}/>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                     <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email de Contacto</FormLabel>
-                          <FormControl>
-                            <Input placeholder="tu@email.com" type="email" {...field} disabled={isProcessing}/>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <FormField
-                    control={form.control}
-                    name="address"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Dirección</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Calle, número, etc." {...field} disabled={isProcessing}/>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="city"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Ciudad</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Tu ciudad" {...field} disabled={isProcessing}/>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Teléfono de Contacto</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Tu número de teléfono" type="tel" {...field} disabled={isProcessing}/>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </div>
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Resumen del Pedido</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {items.map(item => (
-                <div key={item.product.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Image src={item.product.image} alt={item.product.name} width={48} height={48} className="rounded-md object-cover" />
-                    <div>
-                      <p className="font-medium">{item.product.name}</p>
-                      <p className="text-sm text-muted-foreground">Cantidad: {item.quantity}</p>
+      
+        <div className="space-y-8">
+            <Card>
+                <CardHeader>
+                <CardTitle>Resumen del Pedido</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                {items.map(item => (
+                    <div key={item.product.id} className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <Image src={item.product.image} alt={item.product.name} width={64} height={64} className="rounded-md object-cover" />
+                        <div>
+                        <p className="font-medium">{item.product.name}</p>
+                        <p className="text-sm text-muted-foreground">Cantidad: {item.quantity}</p>
+                        </div>
                     </div>
-                  </div>
-                  <p className="font-medium">Gs. {(item.product.price * item.quantity).toLocaleString('es-PY')}</p>
+                    <p className="font-semibold">Gs. {(item.product.price * item.quantity).toLocaleString('es-PY')}</p>
+                    </div>
+                ))}
+                <Separator />
+                <div className="flex justify-between font-bold text-lg">
+                    <p>Total</p>
+                    <p>Gs. {total.toLocaleString('es-PY')}</p>
                 </div>
-              ))}
-              <Separator />
-              <div className="flex justify-between font-bold text-lg">
-                <p>Total</p>
-                <p>Gs. {total.toLocaleString('es-PY')}</p>
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-4">
-               <Button 
-                variant="secondary" 
-                className="w-full bg-black text-white hover:bg-gray-800" 
-                onClick={() => form.formState.isValid ? handleCheckout('Google Pay') : form.trigger()}
-                disabled={isProcessing}>
-                  {isProcessing ? <Loader2 className="animate-spin" /> : 'Pagar con Google Pay'}
-              </Button>
-              <Button form="shipping-form" type="submit" className="w-full" disabled={isProcessing}>
-                {isProcessing ? <Loader2 className="animate-spin" /> : 'Pagar Contra Entrega'}
-              </Button>
-            </CardFooter>
-          </Card>
+                </CardContent>
+            </Card>
+
+            <Form {...form}>
+            <form id="checkout-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Elegí una opción de entrega</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <RadioGroup 
+                            value={deliveryOption} 
+                            onValueChange={(value) => form.setValue('deliveryOption', value as 'delivery' | 'pickup', { shouldValidate: true })}
+                            className="space-y-4"
+                        >
+                            <FormItem className="flex items-center space-x-3 space-y-0 rounded-md border p-4 cursor-pointer hover:bg-muted/50">
+                                <FormControl>
+                                    <RadioGroupItem value="delivery" id="delivery"/>
+                                </FormControl>
+                                <FormLabel htmlFor="delivery" className="font-normal text-base cursor-pointer">
+                                    Quiero agregar una nueva dirección
+                                </FormLabel>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-3 space-y-0 rounded-md border p-4 cursor-pointer hover:bg-muted/50">
+                                <FormControl>
+                                    <RadioGroupItem value="pickup" id="pickup"/>
+                                </FormControl>
+                                <FormLabel htmlFor="pickup" className="font-normal text-base cursor-pointer">
+                                    Prefiero pasar por la tienda (Asunción)
+                                </FormLabel>
+                            </FormItem>
+                        </RadioGroup>
+                    </CardContent>
+                </Card>
+                
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Información de Contacto {deliveryOption === 'delivery' && 'y Envío'}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <FormField control={form.control} name="name" render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Nombre Completo</FormLabel>
+                                <FormControl><Input placeholder="Tu nombre" {...field} disabled={isProcessing}/></FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}/>
+                            <FormField control={form.control} name="email" render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Email de Contacto</FormLabel>
+                                <FormControl><Input placeholder="tu@email.com" type="email" {...field} disabled={isProcessing}/></FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}/>
+                        </div>
+
+                        <FormField control={form.control} name="phone" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Teléfono de Contacto</FormLabel>
+                                <FormControl><Input placeholder="Tu número de teléfono" type="tel" {...field} disabled={isProcessing}/></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}/>
+                        
+                        {deliveryOption === 'delivery' && (
+                            <>
+                            <FormField control={form.control} name="address" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Dirección</FormLabel>
+                                    <FormControl><Input placeholder="Calle, número, barrio, etc." {...field} disabled={isProcessing}/></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}/>
+                            <FormField control={form.control} name="city" render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Ciudad</FormLabel>
+                                <FormControl><Input placeholder="Tu ciudad" {...field} disabled={isProcessing}/></FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}/>
+                            </>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Métodos de Pago</CardTitle>
+                    </CardHeader>
+                    <CardFooter className="flex flex-col sm:flex-row gap-4">
+                        <Button 
+                            type="button"
+                            variant="secondary" 
+                            className="w-full bg-black text-white hover:bg-gray-800" 
+                            onClick={() => handleCheckout('Google Pay')}
+                            disabled={isProcessing}>
+                            {isProcessing ? <Loader2 className="animate-spin" /> : 'Pagar con Google Pay'}
+                        </Button>
+                        <Button form="checkout-form" type="submit" className="w-full" disabled={isProcessing}>
+                            {isProcessing ? <Loader2 className="animate-spin" /> : 'Pagar Contra Entrega'}
+                        </Button>
+                    </CardFooter>
+                </Card>
+            </form>
+            </Form>
         </div>
-      </div>
     </div>
   );
 }
