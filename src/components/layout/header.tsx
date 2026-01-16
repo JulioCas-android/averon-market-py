@@ -5,12 +5,12 @@ import Link from 'next/link';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, User, Menu, X } from 'lucide-react';
+import { ShoppingCart, User, Menu } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
 import { useAuth } from '@/hooks/use-auth';
 import { CartSheet } from '@/components/cart-sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '../ui/sheet';
 
 const NavLinks = ({ onLinkClick }: { onLinkClick?: () => void }) => (
   <>
@@ -43,13 +43,14 @@ export function Header() {
                 <span className="sr-only">Open Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px]">
-              <div className="p-4">
+            <SheetContent side="left" className="w-[300px] p-0">
+              <SheetHeader className="border-b p-4">
+                <SheetTitle className="sr-only">Menú Principal</SheetTitle>
                 <Logo />
-                <nav className="mt-8 flex flex-col gap-4">
-                  <NavLinks onLinkClick={() => setIsMenuOpen(false)} />
-                </nav>
-              </div>
+              </SheetHeader>
+              <nav className="flex flex-col gap-4 p-4">
+                <NavLinks onLinkClick={() => setIsMenuOpen(false)} />
+              </nav>
             </SheetContent>
           </Sheet>
         )}
