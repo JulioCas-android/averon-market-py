@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +18,7 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault(); // Prevent link navigation when clicking the button
@@ -26,6 +28,13 @@ export function ProductCard({ product }: ProductCardProps) {
         title: 'Producto agregado',
         description: `${product.name} fue agregado a tu carrito.`,
     })
+  }
+
+  const handleBuyNow = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem(product);
+    router.push('/checkout');
   }
 
   return (
@@ -50,16 +59,23 @@ export function ProductCard({ product }: ProductCardProps) {
             <CardTitle className="text-base font-semibold mt-1 mb-2 leading-tight flex-grow">{product.name}</CardTitle>
             <p className="text-lg font-bold text-primary">Gs. {product.price.toLocaleString('es-PY')}</p>
         </CardContent>
-        <CardFooter className="p-4 pt-0">
-          <Button 
-            className="w-full" 
-            variant="outline"
-            onClick={handleAddToCart}
-            disabled={product.availability === 'out-of-stock'}
-          >
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            {product.availability === 'in-stock' ? 'Agregar al carrito' : 'Agotado'}
-          </Button>
+        <CardFooter className="p-4 pt-0 flex flex-col gap-2">
+            <Button 
+                className="w-full" 
+                onClick={handleBuyNow}
+                disabled={product.availability === 'out-of-stock'}
+              >
+              Comprar Ahora
+            </Button>
+            <Button 
+                className="w-full" 
+                variant="outline"
+                onClick={handleAddToCart}
+                disabled={product.availability === 'out-of-stock'}
+              >
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                {product.availability === 'in-stock' ? 'Agregar al carrito' : 'Agotado'}
+            </Button>
         </CardFooter>
       </Card>
     </Link>
