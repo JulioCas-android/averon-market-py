@@ -32,7 +32,6 @@ export function Footer() {
               <li><Link href="/terms" className="hover:text-foreground">Términos de Servicio</Link></li>
               <li><Link href="/privacy" className="hover:text-foreground">Política de Privacidad</Link></li>
               <li><Link href="/returns" className="hover:text-foreground">Política de Devoluciones</Link></li>
-              <li><Link href="/admin" className="hover:text-foreground">Admin</Link></li>
             </ul>
           </div>
           <div>
@@ -45,7 +44,12 @@ export function Footer() {
           </div>
         </div>
         <div className="border-t mt-8 pt-6 text-center text-sm">
-          <p>&copy; {new Date().getFullYear()} AVERON Market PY. Todos los derechos reservados.</p>
+          <p>
+            <Link href="/admin" className="opacity-50 hover:opacity-100" aria-label="Acceder al panel de administración">
+                &copy;
+            </Link>
+            {' '}{new Date().getFullYear()} AVERON Market PY. Todos los derechos reservados.
+          </p>
         </div>
       </div>
     </footer>
