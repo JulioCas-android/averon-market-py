@@ -6,8 +6,8 @@ export function Logo() {
       <svg aria-hidden="true" width="36" height="36" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
               <linearGradient id="swoosh-gradient-logo" x1="4.5" y1="36" x2="38" y2="8" gradientUnits="userSpaceOnUse">
-                  <stop stop-color="#F59E0B"/>
-                  <stop offset="1" stop-color="#F97316"/>
+                  <stop stopColor="#F59E0B"/>
+                  <stop offset="1" stopColor="#F97316"/>
               </linearGradient>
           </defs>
           <path d="M21.33 1.33L0 40H8.33L13.66 26.66H30.33L35.66 40H44L27.66 1.33H21.33ZM17.33 21.33L22.5 8.33L27.66 21.33H17.33Z" fill="hsl(var(--primary))"/>
