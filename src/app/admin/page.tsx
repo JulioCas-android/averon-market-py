@@ -30,7 +30,7 @@ const productSchema = z.object({
   condition: z.enum(['Nuevo', 'Usado', 'Reacondicionado']),
   color: z.string().trim().optional(),
   image: z.string().trim().min(10, 'La URL o Data URI de la imagen es requerida.'),
-  imageHint: z.string().trim().max(40, "La pista para la IA no debe exceder dos palabras").optional(),
+  imageHint: z.string().trim().max(40, "La pista para la IA no debe exceder los 40 caracteres").optional(),
   onSale: z.boolean().default(false),
 });
 
@@ -65,11 +65,16 @@ export default function AdminPage() {
     setIsSubmitting(true);
     const productsCollection = collection(firestore, 'products');
 
-    const dataToSave = {
-        ...values,
-        imageHint: values.imageHint || undefined,
-        color: values.color || undefined,
-    };
+    const dataToSave = { ...values };
+
+    // Firestore doesn't allow 'undefined' fields. If optional fields are
+    // empty/falsy, they should be removed from the object to avoid an error.
+    if (!dataToSave.color) {
+      delete dataToSave.color;
+    }
+    if (!dataToSave.imageHint) {
+      delete dataToSave.imageHint;
+    }
     
     addDoc(productsCollection, dataToSave)
       .then(() => {
@@ -83,7 +88,7 @@ export default function AdminPage() {
         const permissionError = new FirestorePermissionError({
           path: productsCollection.path,
           operation: 'create',
-          requestResourceData: values,
+          requestResourceData: dataToSave,
         });
         errorEmitter.emit('permission-error', permissionError);
       })
