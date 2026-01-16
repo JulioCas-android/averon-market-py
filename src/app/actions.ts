@@ -4,6 +4,7 @@
 import { sendPersonalizedOfferNotification, PersonalizedOfferNotificationInput } from '@/ai/flows/personalized-offer-notifications';
 import { generateImage, GenerateImageInput } from '@/ai/flows/generate-image-flow';
 import { generateProductDescription, GenerateProductDescriptionInput } from '@/ai/flows/generate-product-description-flow';
+import { suggestProductCategory, SuggestProductCategoryInput } from '@/ai/flows/suggest-product-category-flow';
 
 export async function sendPersonalizedOfferNotificationAction() {
     // In a real application, you would fetch this data for the logged-in user.
@@ -53,5 +54,23 @@ export async function generateProductDescriptionAction(productName: string) {
         console.error('Error generating product description:', error);
         const errorMessage = error.message || 'Ocurrió un error desconocido.';
         return { success: false, message: `No se pudo generar la descripción: ${errorMessage}` };
+    }
+}
+
+
+export async function suggestProductCategoryAction(productName: string) {
+    if (!productName) {
+        return { success: false, message: 'El nombre del producto no puede estar vacío.' };
+    }
+
+    const input: SuggestProductCategoryInput = { productName };
+
+    try {
+        const result = await suggestProductCategory(input);
+        return { success: true, category: result.category };
+    } catch (error: any) {
+        console.error('Error suggesting product category:', error);
+        const errorMessage = error.message || 'Ocurrió un error desconocido.';
+        return { success: false, message: `No se pudo sugerir una categoría: ${errorMessage}` };
     }
 }

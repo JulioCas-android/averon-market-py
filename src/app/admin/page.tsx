@@ -17,9 +17,9 @@ import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Loader2, Sparkles, Upload } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import Image from 'next/image';
-import { generateProductImageAction, generateProductDescriptionAction } from '@/app/actions';
+import { generateProductImageAction, generateProductDescriptionAction, suggestProductCategoryAction } from '@/app/actions';
 
 const productSchema = z.object({
   name: z.string().trim().min(3, 'El nombre debe tener al menos 3 caracteres'),
@@ -41,6 +41,7 @@ export default function AdminPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
+  const [isSuggestingCategory, setIsSuggestingCategory] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof productSchema>>({
@@ -59,21 +60,45 @@ export default function AdminPage() {
     },
   });
 
+  const categories = useMemo(() => {
+    if (!products) return [];
+    return [...new Set(products.map(p => p.category).filter(Boolean))];
+  }, [products]);
+
   const imageUrl = form.watch('image');
+
+  const handleSuggestCategory = async () => {
+    const productName = form.getValues('name');
+    if (!productName || form.getValues('category')) {
+      return;
+    }
+
+    setIsSuggestingCategory(true);
+    const result = await suggestProductCategoryAction(productName);
+    setIsSuggestingCategory(false);
+
+    if (result.success && result.category) {
+        form.setValue('category', result.category, { shouldValidate: true });
+        toast({
+            title: 'Categoría Sugerida',
+            description: `Se sugirió la categoría "${result.category}".`,
+        });
+    } else {
+        console.warn('Could not suggest a category:', result.message);
+    }
+  };
 
   const onSubmit = async (values: z.infer<typeof productSchema>) => {
     setIsSubmitting(true);
     const productsCollection = collection(firestore, 'products');
 
     const dataToSave = { ...values };
-
-    // Firestore doesn't allow 'undefined' fields. If optional fields are
-    // empty/falsy, they should be removed from the object to avoid an error.
+    
     if (!dataToSave.color) {
-      delete dataToSave.color;
+      delete (dataToSave as Partial<typeof dataToSave>).color;
     }
     if (!dataToSave.imageHint) {
-      delete dataToSave.imageHint;
+      delete (dataToSave as Partial<typeof dataToSave>).imageHint;
     }
     
     addDoc(productsCollection, dataToSave)
@@ -202,7 +227,7 @@ export default function AdminPage() {
                       <FormItem>
                         <FormLabel>Nombre del Producto</FormLabel>
                         <FormControl>
-                          <Input placeholder="Ej: Smartphone X1" {...field} />
+                          <Input placeholder="Ej: Smartphone X1" {...field} onBlur={handleSuggestCategory} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -263,15 +288,23 @@ export default function AdminPage() {
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <FormField
+                     <FormField
                       control={form.control}
                       name="category"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Categoría</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Ej: Tecnología" {...field} />
-                          </FormControl>
+                          <div className="relative">
+                            <FormControl>
+                                <Input placeholder="Ej: Tecnología" {...field} list="category-list" disabled={isSuggestingCategory} />
+                            </FormControl>
+                            {isSuggestingCategory && (
+                                <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                            )}
+                            <datalist id="category-list">
+                                {categories.map(cat => <option key={cat} value={cat} />)}
+                            </datalist>
+                          </div>
                           <FormMessage />
                         </FormItem>
                       )}
