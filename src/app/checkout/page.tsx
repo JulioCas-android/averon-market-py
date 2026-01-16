@@ -17,9 +17,10 @@ import { addDoc, collection } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowRight, ShoppingCart } from 'lucide-react';
 import type { Order } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import Link from 'next/link';
 
 
 const checkoutSchema = z.object({
@@ -73,7 +74,7 @@ export default function CheckoutPage() {
     );
   }
 
-  const handleCheckout = async (paymentMethod: 'Google Pay' | 'COD') => {
+  const handleCheckout = async (paymentMethod: 'COD' = 'COD') => {
       const isValid = await form.trigger();
       if (!isValid) {
         toast({
@@ -108,7 +109,7 @@ export default function CheckoutPage() {
       shippingPhone: formValues.phone,
       items: items.map(item => ({ ...item, product: { ...item.product } })), // Ensure plain objects
       total,
-      status: paymentMethod === 'COD' ? 'Pendiente de Pago' : 'Procesando',
+      status: 'Pendiente de Pago',
       createdAt: new Date().toISOString(),
     };
     
@@ -194,9 +195,28 @@ export default function CheckoutPage() {
                     </CardContent>
                 </Card>
                 
+                {deliveryOption === 'pickup' && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Información de Retiro</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4 text-sm text-muted-foreground">
+                      <p>Puede ser retirado de la tienda <strong>AVERON Market</strong> 3 horas después de recibir el mensaje con tu número de <strong>FACTURA</strong>, vía WhatsApp.</p>
+                      <div>
+                        <h4 className="font-semibold text-foreground">Dirección:</h4>
+                        <p>Avda. Eusebio Ayala e/ Prof. Sergio Conradi. <a href="#" className="text-primary underline">Ver mapa</a></p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-foreground">Horarios de Atención:</h4>
+                        <p>Lunes a Domingo: 09:00 a 21:00</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 <Card>
                     <CardHeader>
-                        <CardTitle>Información de Contacto {deliveryOption === 'delivery' && 'y Envío'}</CardTitle>
+                        <CardTitle>Tus Datos de Contacto {deliveryOption === 'delivery' && 'y Envío'}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -245,24 +265,18 @@ export default function CheckoutPage() {
                     </CardContent>
                 </Card>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Métodos de Pago</CardTitle>
-                    </CardHeader>
-                    <CardFooter className="flex flex-col sm:flex-row gap-4">
-                        <Button 
-                            type="button"
-                            variant="secondary" 
-                            className="w-full bg-black text-white hover:bg-gray-800" 
-                            onClick={() => handleCheckout('Google Pay')}
-                            disabled={isProcessing}>
-                            {isProcessing ? <Loader2 className="animate-spin" /> : 'Pagar con Google Pay'}
-                        </Button>
-                        <Button form="checkout-form" type="submit" className="w-full" disabled={isProcessing}>
-                            {isProcessing ? <Loader2 className="animate-spin" /> : 'Pagar Contra Entrega'}
-                        </Button>
-                    </CardFooter>
-                </Card>
+                 <div className="flex flex-col gap-4 pt-4">
+                    <Button form="checkout-form" type="submit" size="lg" className="w-full h-12 text-base" disabled={isProcessing}>
+                        {isProcessing ? <Loader2 className="animate-spin" /> : 'Confirmar y Continuar con la Compra'}
+                        {!isProcessing && <ArrowRight className="ml-2 h-5 w-5" />}
+                    </Button>
+                    <Button variant="outline" size="lg" asChild className="w-full h-12 text-base">
+                        <Link href="/#products">
+                            <ShoppingCart className="mr-2 h-5 w-5" />
+                            Seguir Viendo Productos
+                        </Link>
+                    </Button>
+                </div>
             </form>
             </Form>
         </div>
