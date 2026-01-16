@@ -1,12 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useDoc, useCollection } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, Truck, ShieldCheck, Heart, MessageCircleQuestion, Minus, Plus } from 'lucide-react';
+import { Star, Truck, ShieldCheck, Heart, Minus, Plus } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
 import { useToast } from '@/hooks/use-toast';
 import type { Product } from '@/lib/types';
@@ -53,6 +53,15 @@ export default function ProductDetailPage() {
   const { data: allProducts, loading: relatedLoading } = useCollection<Product>('products');
 
   const [quantity, setQuantity] = useState(1);
+  const [soldCount, setSoldCount] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
+
+  useEffect(() => {
+    // Generate random numbers on the client after mount to avoid hydration errors
+    // and ensure they are re-generated if the product ID changes.
+    setSoldCount(Math.floor(Math.random() * 50) + 1);
+    setReviewCount(Math.floor(Math.random() * 200) + 10);
+  }, [id]);
 
   const relatedProducts = useMemo(() => {
     if (!product || !allProducts) return [];
@@ -87,9 +96,6 @@ export default function ProductDetailPage() {
   const handleQuantityChange = (amount: number) => {
     setQuantity(prev => Math.max(1, Math.min(product.stock, prev + amount)));
   }
-  
-  const soldCount = useMemo(() => Math.floor(Math.random() * 50) + 1, [product.id]);
-  const reviewCount = useMemo(() => Math.floor(Math.random() * 200) + 10, [product.id]);
 
   return (
     <div className="container mx-auto px-4 py-8">
