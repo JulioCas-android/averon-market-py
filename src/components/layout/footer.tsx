@@ -2,7 +2,7 @@ import { Logo } from '@/components/logo';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Github, Twitter, Instagram } from 'lucide-react';
+import { Facebook, Instagram } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -13,9 +13,8 @@ export function Footer() {
             <Logo />
             <p className="text-sm">Tecnología y comodidad en un solo lugar.</p>
             <div className="flex space-x-4">
-              <Link href="#" className="hover:text-foreground"><Github className="h-5 w-5" /></Link>
-              <Link href="#" className="hover:text-foreground"><Twitter className="h-5 w-5" /></Link>
-              <Link href="#" className="hover:text-foreground"><Instagram className="h-5 w-5" /></Link>
+              <Link href="#" aria-label="Facebook de AVERON Market PY" className="hover:text-foreground"><Facebook className="h-5 w-5" /></Link>
+              <Link href="#" aria-label="Instagram de AVERON Market PY" className="hover:text-foreground"><Instagram className="h-5 w-5" /></Link>
             </div>
           </div>
           <div>
