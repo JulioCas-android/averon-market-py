@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth, useCollection } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -11,28 +11,33 @@ import type { Order } from '@/lib/types';
 import OfferNotification from '@/components/offer-notification';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const mockOrders: Omit<Order, 'customerName' | 'customerEmail' | 'shippingAddress' | 'shippingCity' | 'shippingPhone'>[] = [
-  { id: 'ORD-001', createdAt: '2024-05-20T10:00:00Z', total: 2500000, status: 'Entregado', items: [] },
-  { id: 'ORD-002', createdAt: '2024-06-10T11:30:00Z', total: 750000, status: 'Enviado', items: [] },
-  { id: 'ORD-003', createdAt: '2024-07-01T15:45:00Z', total: 3200000, status: 'Pagado', items: [] },
-];
-
 export default function ProfilePage() {
-  const { user, logout, loading } = useAuth();
+  const { user, logout, loading: authLoading } = useAuth();
   const router = useRouter();
 
+  const { data: allOrders, loading: ordersLoading } = useCollection<Order>('orders');
+
+  const userOrders = useMemo(() => {
+    if (!allOrders || !user) return [];
+    return allOrders
+      .filter(order => order.userId === user.uid)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [allOrders, user]);
+
+  const loading = authLoading || !user;
+
   useEffect(() => {
-    if (!loading && !user) {
+    if (!authLoading && !user) {
       router.push('/login');
     }
-  }, [user, loading, router]);
+  }, [user, authLoading, router]);
 
   const handleLogout = async () => {
     await logout();
     router.push('/');
   };
 
-  if (loading || !user) {
+  if (loading) {
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="flex flex-col md:flex-row items-center justify-between mb-8">
@@ -100,14 +105,20 @@ export default function ProfilePage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockOrders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">{order.id}</TableCell>
-                      <TableCell>{new Date(order.createdAt).toLocaleDateString('es-PY')}</TableCell>
-                      <TableCell>{order.status}</TableCell>
-                      <TableCell className="text-right">Gs. {order.total.toLocaleString('es-PY')}</TableCell>
-                    </TableRow>
-                  ))}
+                  {ordersLoading ? (
+                    <TableRow><TableCell colSpan={4} className="h-24 text-center">Cargando tus pedidos...</TableCell></TableRow>
+                  ) : userOrders.length > 0 ? (
+                    userOrders.map((order) => (
+                      <TableRow key={order.id}>
+                        <TableCell className="font-medium font-mono text-xs">#{order.id.substring(0, 7)}...</TableCell>
+                        <TableCell>{new Date(order.createdAt).toLocaleDateString('es-PY')}</TableCell>
+                        <TableCell>{order.status}</TableCell>
+                        <TableCell className="text-right">Gs. {order.total.toLocaleString('es-PY')}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow><TableCell colSpan={4} className="h-24 text-center">Aún no has realizado ningún pedido.</TableCell></TableRow>
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
