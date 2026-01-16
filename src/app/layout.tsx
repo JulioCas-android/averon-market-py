@@ -35,6 +35,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const whatsappMessage = "¡Hola! Estoy visitando AVERON Market PY y me gustaría recibir más información.";
+  const whatsappUrl = `https://wa.me/595986230534?text=${encodeURIComponent(whatsappMessage)}`;
+  
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -57,7 +60,7 @@ export default function RootLayout({
           </AuthProvider>
         </FirebaseClientProvider>
         <Link
-          href="https://wa.me/595986230534"
+          href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="fixed bottom-6 right-6 z-50 rounded-full bg-[#25D366] p-3 text-white shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
