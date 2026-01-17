@@ -59,7 +59,7 @@ export function Footer() {
         </div>
         <div className="border-t mt-8 pt-6 text-center text-sm">
           <p>
-            <Link href="/admin" className="opacity-50 hover:opacity-100" aria-label="Acceder al panel de administración">
+            <Link href="/login" className="opacity-50 hover:opacity-100" aria-label="Iniciar sesión para administrar el sitio">
                 &copy;
             </Link>
             {' '}{new Date().getFullYear()} AVERON Market PY. Todos los derechos reservados.
