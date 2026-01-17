@@ -92,17 +92,14 @@ export async function createPagoparPaymentAction(orderId: string) {
 
         const pagoparResponse = await createPaymentOrder(orderData, orderId);
 
-        if (pagoparResponse.respuesta === false) {
-             throw new Error(pagoparResponse.resultado?.[0]?.descripcion || 'Error desconocido de Pagopar.');
+        if (!pagoparResponse.success || !pagoparResponse.hash) {
+             throw new Error(pagoparResponse.message || 'Error desconocido de Pagopar.');
         }
 
-        const transactionId = pagoparResponse.resultado[0].id_transaccion;
-        const paymentUrl = pagoparResponse.resultado[0].url;
+        // Save the transaction hash to the order
+        await updateDoc(orderDocRef, { pagoparTransactionId: pagoparResponse.hash });
 
-        // Save the transaction ID to the order
-        await updateDoc(orderDocRef, { pagoparTransactionId: transactionId });
-
-        return { success: true, paymentUrl };
+        return { success: true, paymentUrl: pagoparResponse.paymentUrl };
     } catch (error: any) {
         console.error('Error creating Pagopar payment:', error);
         return { success: false, message: error.message };
