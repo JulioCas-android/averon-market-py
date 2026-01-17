@@ -5,7 +5,7 @@ import { addDoc, collection, deleteDoc, doc, updateDoc, getDoc } from 'firebase/
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import type { Product, Order, UserProfile } from '@/lib/types';
+import type { Product, Order } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -66,56 +66,57 @@ export default function AdminPage() {
   const router = useRouter();
   const { toast } = useToast();
   
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [authChecked, setAuthChecked] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading) {
+      return; // Wait until authentication state is loaded
+    }
 
-    const checkAdminStatus = async () => {
-      if (!user) {
-        toast({
-          variant: 'destructive',
-          title: 'Acceso Denegado',
-          description: 'Debes iniciar sesión para acceder a esta página.',
-        });
-        router.replace('/login');
-        return;
-      }
-
-      try {
-        const userDocRef = doc(firestore, 'users', user.uid);
-        const userDocSnap = await getDoc(userDocRef);
-
-        if (userDocSnap.exists() && userDocSnap.data().role === 'admin') {
-          setIsAuthorized(true);
-        } else {
+    if (!user) {
+      toast({
+        variant: 'destructive',
+        title: 'Acceso Denegado',
+        description: 'Debes iniciar sesión para acceder a esta página.',
+      });
+      router.replace('/login');
+      return;
+    }
+    
+    // Only check the role if we haven't already determined authorization
+    if (isAuthorized === null) {
+      const checkAdminRole = async () => {
+        try {
+          const userDocRef = doc(firestore, 'users', user.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          
+          if (userDocSnap.exists() && userDocSnap.data().role === 'admin') {
+            setIsAuthorized(true);
+          } else {
+            setIsAuthorized(false);
+            toast({
+              variant: 'destructive',
+              title: 'Acceso Denegado',
+              description: 'Debes ser un administrador para ver esta página.',
+            });
+            router.replace('/');
+          }
+        } catch (error) {
+          console.error("Error checking admin role:", error);
           setIsAuthorized(false);
           toast({
             variant: 'destructive',
-            title: 'Acceso Denegado',
-            description: 'Debes ser un administrador para ver esta página.',
+            title: 'Error de Permisos',
+            description: 'No se pudo verificar tu rol de usuario.',
           });
           router.replace('/');
         }
-      } catch (error) {
-        console.error("Error checking admin status:", error);
-        setIsAuthorized(false);
-        toast({
-            variant: 'destructive',
-            title: 'Error de Permisos',
-            description: 'No se pudo verificar tu rol de usuario.',
-        });
-        router.replace('/');
-      } finally {
-        setAuthChecked(true);
-      }
-    };
+      };
+      
+      checkAdminRole();
+    }
+  }, [user, authLoading, firestore, router, toast, isAuthorized]);
 
-    checkAdminStatus();
-  }, [authLoading, user, firestore, router, toast]);
-
-  // Prevent queries from running if not authorized
   const productsQuery = useMemo(() => (isAuthorized && firestore) ? collection(firestore, 'products') : null, [firestore, isAuthorized]);
   const { data: products, loading: productsLoading } = useCollection<Product>(productsQuery);
   const ordersQuery = useMemo(() => (isAuthorized && firestore) ? collection(firestore, 'orders') : null, [firestore, isAuthorized]);
@@ -301,7 +302,7 @@ export default function AdminPage() {
       });
   };
 
-  if (!authChecked || !isAuthorized) {
+  if (authLoading || isAuthorized === null) {
     return (
         <div className="container mx-auto px-4 py-12 flex items-center justify-center h-[70vh]">
             <div className="text-center">
@@ -311,6 +312,10 @@ export default function AdminPage() {
             </div>
         </div>
     );
+  }
+  
+  if (!isAuthorized) {
+      return null; // Should have been redirected, but this prevents flashing content.
   }
 
   // Common form fields component to avoid repetition
@@ -558,5 +563,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
-    
