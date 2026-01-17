@@ -85,10 +85,6 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     addItem(product, quantity);
-    toast({
-      title: 'Producto agregado',
-      description: `${quantity} x ${product.name} fue agregado a tu carrito.`,
-    });
   };
 
   const handleBuyNow = () => {

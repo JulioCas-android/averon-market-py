@@ -51,7 +51,6 @@ export function Header() {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // This ensures the component has mounted on the client, avoiding hydration mismatches.
     setIsClient(true);
   }, []);
 
@@ -59,19 +58,13 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container relative flex h-16 items-center">
-        {/* Left Section: Desktop Nav / Mobile Menu */}
-        <div className="hidden md:flex items-center gap-6">
-          <Logo />
-          <nav className="flex items-center space-x-6 text-sm font-medium">
-            <NavLinks />
-          </nav>
-        </div>
-        
-        <div className="flex items-center md:hidden">
-           <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+      <div className="container flex h-16 items-center justify-between">
+        {/* Left Section: Menu, Logo, Nav */}
+        <div className="flex items-center gap-2 md:gap-6">
+          {/* Mobile Menu */}
+          <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="md:hidden">
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Abrir Menú</span>
               </Button>
@@ -86,15 +79,17 @@ export function Header() {
               </nav>
             </SheetContent>
           </Sheet>
-        </div>
-        
-        {/* Mobile Logo (absolutely positioned to be in the center) */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:hidden">
-            <Logo />
+          
+          <Logo />
+
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+            <NavLinks />
+          </nav>
         </div>
 
         {/* Right Section: Actions */}
-        <div className="ml-auto flex items-center space-x-2">
+        <div className="flex items-center space-x-2">
           <Button
             variant="ghost"
             size="icon"
@@ -102,7 +97,7 @@ export function Header() {
             onClick={() => setIsCartOpen(true)}
           >
             <ShoppingCart className="h-5 w-5" />
-            {totalItems > 0 && (
+            {isClient && totalItems > 0 && (
               <Badge
                 variant="secondary"
                 className="absolute -top-2 -right-2 h-5 w-5 justify-center rounded-full p-0 text-xs"

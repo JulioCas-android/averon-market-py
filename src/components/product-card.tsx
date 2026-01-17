@@ -35,10 +35,6 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
     e.preventDefault();
     e.stopPropagation();
     addItem(product);
-    toast({
-        title: 'Producto agregado',
-        description: `${product.name} fue agregado a tu carrito.`,
-    })
   }
 
   const handleBuyNow = (e: React.MouseEvent<HTMLButtonElement>) => {
