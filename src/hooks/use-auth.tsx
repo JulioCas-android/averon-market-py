@@ -63,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userProfile = {
             name: user.displayName,
             email: user.email,
+            role: 'customer',
         };
         const userDocRef = doc(firestore, 'users', user.uid);
         
@@ -86,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await updateProfile(firebaseUser, { displayName: name });
     
     // Create a user profile document in Firestore
-    const userProfile = { name, email };
+    const userProfile = { name, email, role: 'customer' };
     const userDocRef = doc(firestore, 'users', firebaseUser.uid);
     
     setDoc(userDocRef, userProfile).catch(async (serverError) => {

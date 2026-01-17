@@ -21,7 +21,7 @@
           "description": "User role for authorization."
         }
       },
-      "required": ["name", "email"]
+      "required": ["name", "email", "role"]
     },
     "Product": {
       "title": "Product",
