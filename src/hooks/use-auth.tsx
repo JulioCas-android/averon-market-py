@@ -74,13 +74,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
         const userDocRef = doc(firestore, 'users', user.uid);
         
-        setDoc(userDocRef, userProfile).catch(async (serverError) => {
+        // Ensure the user document is created before proceeding.
+        // This prevents race conditions where subsequent code tries to read the document
+        // before it has been written to the database.
+        await setDoc(userDocRef, userProfile).catch((serverError) => {
             const permissionError = new FirestorePermissionError({
               path: userDocRef.path,
               operation: 'create',
               requestResourceData: userProfile,
             });
             errorEmitter.emit('permission-error', permissionError);
+            // Re-throw the error so the calling component knows the registration failed.
+            throw serverError;
         });
     }
     return user;
