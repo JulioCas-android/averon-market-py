@@ -46,59 +46,51 @@ export default function LoginPage() {
     },
   });
   
+  // This function can now throw an error, which will be caught by the caller
   const checkRoleAndRedirect = async (user: FirebaseUser | null) => {
     if (!user || !firestore) {
-      router.push('/profile'); // Fallback to default profile page
+      router.push('/profile'); // Fallback if something is wrong
       return;
     }
 
-    try {
-      const userDocRef = doc(firestore, 'users', user.uid);
-      const userDocSnap = await getDoc(userDocRef);
+    // This getDoc call might fail if security rules are incorrect
+    const userDocRef = doc(firestore, 'users', user.uid);
+    const userDocSnap = await getDoc(userDocRef);
 
-      if (userDocSnap.exists()) {
-        const userProfile = userDocSnap.data() as UserProfile;
-        if (userProfile.role === 'admin') {
-          toast({
-            title: 'Inicio de Sesión Exitoso',
-            description: 'Bienvenido, administrador.',
-          });
-          router.push('/admin');
-          return;
-        }
+    if (userDocSnap.exists()) {
+      const userProfile = userDocSnap.data() as UserProfile;
+      if (userProfile.role === 'admin') {
+        toast({ title: 'Inicio de Sesión Exitoso', description: 'Bienvenido, administrador. Redirigiendo...' });
+        router.push('/admin');
+        return;
       }
-      
-      // Default redirection for non-admins or if profile doesn't have a role
-      toast({
-        title: 'Inicio de Sesión Exitoso',
-        description: 'Bienvenido de nuevo.',
-      });
-      router.push('/profile');
-
-    } catch (error) {
-      console.error("Error al verificar el rol del usuario:", error);
-      // Fallback redirection in case of error
-      toast({
-        title: 'Inicio de Sesión Exitoso',
-        description: 'Bienvenido de nuevo (con error de rol).',
-      });
-      router.push('/profile');
     }
+    
+    // Default redirection for non-admins or if profile doesn't exist/have a role
+    toast({ title: 'Inicio de Sesión Exitoso', description: 'Bienvenido de nuevo.' });
+    router.push('/profile');
   };
-
 
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
     setIsLoading(true);
     try {
       const user = await login(values.email, values.password);
       await checkRoleAndRedirect(user);
-    } catch (error) {
+    } catch (error: any) {
+      let description = 'Credenciales incorrectas o problema de conexión.';
+      // Check for specific Firebase errors to provide better feedback
+      if (error.code === 'auth/invalid-credential') {
+        description = 'El correo electrónico o la contraseña son incorrectos.';
+      } else if (error.name === 'FirestorePermissionError' || (error.code && error.code.includes('permission-denied'))) {
+        description = 'Inicio de sesión correcto, pero no se pudo verificar tu rol. Revisa los permisos de la base de datos.';
+      }
+      
       toast({
         variant: 'destructive',
         title: 'Error de Inicio de Sesión',
-        description: 'Credenciales incorrectas. Por favor, inténtalo de nuevo.',
+        description: description,
       });
-       setIsLoading(false);
+      setIsLoading(false); // IMPORTANT: Stop loading on any error
     }
   };
   
@@ -108,20 +100,19 @@ export default function LoginPage() {
       const user = await loginWithGoogle();
       await checkRoleAndRedirect(user);
     } catch (error: any) {
+      let description = error.message || 'No se pudo iniciar sesión con Google.';
       if (error.code === 'auth/account-exists-with-different-credential') {
-         toast({
-            variant: 'destructive',
-            title: 'Correo ya en uso',
-            description: 'Este correo fue registrado con contraseña. Por favor, inicia sesión con tu contraseña.',
-          });
-      } else {
-        toast({
-            variant: 'destructive',
-            title: 'Error de Inicio de Sesión con Google',
-            description: error.message || 'No se pudo iniciar sesión. Por favor, inténtalo de nuevo.',
-        });
+         description = 'Este correo ya fue registrado con contraseña. Por favor, inicia sesión con tu contraseña.';
+      } else if (error.name === 'FirestorePermissionError' || (error.code && error.code.includes('permission-denied'))) {
+        description = 'Inicio de sesión correcto, pero no se pudo verificar tu rol. Revisa los permisos de la base de datos.';
       }
-      setIsLoading(false);
+      
+      toast({
+            variant: 'destructive',
+            title: 'Error de Inicio de Sesión',
+            description: description,
+      });
+      setIsLoading(false); // IMPORTANT: Stop loading on any error
     }
   };
 

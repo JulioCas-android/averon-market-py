@@ -1,44 +1,33 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Función auxiliar para verificar si el usuario tiene el rol de 'admin'.
     function isAdmin() {
-      // Verifica que el usuario esté autenticado y que su documento en la colección 'users'
-      // tenga el campo 'role' con el valor 'admin'.
+      // Return true if the user is authenticated and has the 'admin' role in their user document.
       return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // COLECCIÓN: products
-    // `read` combina los permisos de `get` (leer un solo documento) y `list` (leer una colección).
-    // `allow read: if true;` permite que CUALQUIER persona (autenticada o no) vea los productos.
-    // Solo los administradores pueden crear, actualizar o eliminar productos.
+    // Products: Anyone can read products. Only admins can write them.
     match /products/{productId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // COLECCIÓN: users
-    // Los usuarios solo pueden leer y actualizar su propio perfil.
-    // Los usuarios pueden crear su propio perfil al registrarse.
+    // Users: A user can create their own profile, and can only read or update their own profile.
     match /users/{userId} {
-      allow read, update: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null;
+      allow read, update: if request.auth.uid == userId;
+      allow create: if request.auth.uid == userId;
     }
 
-    // COLECCIÓN: orders
-    // Cualquier persona (incluso invitados sin cuenta) puede crear un pedido.
-    // Los usuarios registrados pueden leer sus propios pedidos y los administradores pueden leer todos.
-    // La lectura de la lista completa de pedidos ('list') está permitida para usuarios autenticados,
-    // pero el código del cliente SIEMPRE debe filtrar por 'userId' para evitar fugas de datos.
+    // Orders: Anyone (even guests) can create an order.
+    // Registered users can read their own orders. Admins can read all orders.
     match /orders/{orderId} {
       allow create: if true;
       allow get: if (request.auth != null && resource.data.userId == request.auth.uid) || isAdmin();
-      allow list: if request.auth != null;
+      allow list: if request.auth != null; // Client must filter by userId
       allow update: if isAdmin();
-      allow delete: if false; // Por seguridad, no se permite eliminar pedidos.
+      allow delete: if false; // For safety, orders cannot be deleted.
     }
   }
 }
