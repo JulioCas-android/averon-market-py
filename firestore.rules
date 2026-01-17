@@ -1,41 +1,43 @@
+
 rules_version = '2';
 
-// Rules for the Averon Market PY Firestore database
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper function to check if the user has an 'admin' role.
+    // Función auxiliar para verificar si el usuario tiene el rol de 'admin'.
+    // Esto se usa para proteger las operaciones de escritura (crear, actualizar, eliminar).
     function isAdmin() {
       return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Collection: products
-    // Anyone can view products. Only admins can modify them.
+    // COLECCIÓN: products
+    // Simplificamos la regla: 'read' combina 'get' (leer un documento) y 'list' (leer una colección).
+    // Esto permite que CUALQUIER persona (autenticada o no) vea los productos.
+    // Solo los administradores pueden crear, actualizar o eliminar productos.
     match /products/{productId} {
-      allow get: if true;
-      allow list: if true;
+      allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Collection: users
-    // Users can create and manage their own profile.
+    // COLECCIÓN: users
+    // Los usuarios solo pueden leer y actualizar su propio perfil.
+    // Los usuarios pueden crear su propio perfil al registrarse.
     match /users/{userId} {
       allow read, update: if request.auth != null && request.auth.uid == userId;
       allow create: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Collection: orders
-    // Anyone can create an order (guest checkout).
-    // Admins can manage all orders.
-    // Users can view their own orders via queries filtered on the client.
+    // COLECCIÓN: orders
+    // Cualquier persona (incluso invitados) puede crear un pedido.
+    // Los usuarios pueden leer sus propios pedidos y los administradores pueden leer todos.
+    // La lectura de la lista completa de pedidos está permitida para usuarios autenticados,
+    // pero el código del cliente SIEMPRE debe filtrar por 'userId' para evitar fugas de datos.
     match /orders/{orderId} {
       allow create: if true;
       allow get: if (request.auth != null && resource.data.userId == request.auth.uid) || isAdmin();
-      // WARNING: This allows any logged-in user to query the orders collection.
-      // The client-side code MUST filter by userId to prevent data leakage.
       allow list: if request.auth != null;
       allow update: if isAdmin();
-      allow delete: if false; // Do not allow orders to be deleted.
+      allow delete: if false; // No se permite eliminar pedidos.
     }
   }
 }
