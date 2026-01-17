@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -10,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Star } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
 import { useToast } from '@/hooks/use-toast';
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 interface ProductCardProps {
   product: Product;
@@ -21,8 +22,13 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
   const { addItem } = useCart();
   const { toast } = useToast();
   const router = useRouter();
+  const [reviewCount, setReviewCount] = useState(0);
 
-  const reviewCount = useMemo(() => Math.floor(Math.random() * 200) + 10, [product.id]);
+  useEffect(() => {
+    // Generate random number on client to avoid hydration mismatch
+    setReviewCount(Math.floor(Math.random() * 200) + 10);
+  }, []);
+
   const isInStock = product.stock > 0;
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -95,7 +101,7 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
                     <Star className="w-4 h-4 fill-current" />
                     <Star className="w-4 h-4 text-gray-300 fill-gray-300" />
                 </div>
-                <span className="text-muted-foreground/80">({reviewCount})</span>
+                {reviewCount > 0 && <span className="text-muted-foreground/80">({reviewCount})</span>}
             </div>
 
             <p className="text-2xl font-bold text-primary">Gs. {product.price.toLocaleString('es-PY')}</p>

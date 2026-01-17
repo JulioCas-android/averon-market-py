@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -58,7 +59,6 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     // Generate random numbers on the client after mount to avoid hydration errors
-    // and ensure they are re-generated if the product ID changes.
     setSoldCount(Math.floor(Math.random() * 50) + 1);
     setReviewCount(Math.floor(Math.random() * 200) + 10);
   }, [id]);
@@ -141,9 +141,9 @@ export default function ProductDetailPage() {
                   <Star className="w-4 h-4 fill-current" />
                   <Star className="w-4 h-4 fill-current" />
                   <Star className="w-4 h-4 fill-current text-gray-300" />
-                  <span className="text-muted-foreground ml-1">({reviewCount} reseñas)</span>
+                  {reviewCount > 0 && <span className="text-muted-foreground ml-1">({reviewCount} reseñas)</span>}
               </div>
-              <span className='text-green-600 font-semibold'>{soldCount} vendidos</span>
+              {soldCount > 0 && <span className='text-green-600 font-semibold'>{soldCount} vendidos</span>}
             </div>
           </div>
           
