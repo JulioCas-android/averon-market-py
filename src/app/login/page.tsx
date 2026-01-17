@@ -45,14 +45,14 @@ export default function LoginPage() {
     },
   });
 
-  const handleSuccessfulLogin = async (user: FirebaseUser) => {
-    if (!user || !firestore) {
-      toast({ variant: "destructive", title: "Error", description: "No se pudo obtener la información del usuario." });
-      setIsLoading(false);
-      return;
-    }
-
+  const onSubmit = async (values: z.infer<typeof loginSchema>) => {
+    setIsLoading(true);
     try {
+      const user = await login(values.email, values.password);
+      if (!user || !firestore) {
+        throw new Error('No se pudo obtener la información del usuario.');
+      }
+      
       const userDocRef = doc(firestore, 'users', user.uid);
       const userDocSnap = await getDoc(userDocRef);
 
@@ -69,25 +69,13 @@ export default function LoginPage() {
         });
         router.push('/profile');
       }
-    } catch (error) {
-       toast({
-        variant: "destructive",
-        title: 'Error de Redirección',
-        description: 'No se pudo verificar tu rol de usuario. Redirigiendo al perfil.',
-      });
-      router.push('/profile');
-    }
-  };
 
-  const onSubmit = async (values: z.infer<typeof loginSchema>) => {
-    setIsLoading(true);
-    try {
-      const user = await login(values.email, values.password);
-      await handleSuccessfulLogin(user);
     } catch (error: any) {
       let description = 'Credenciales incorrectas o problema de conexión.';
       if (error.code === 'auth/invalid-credential') {
         description = 'El correo electrónico o la contraseña son incorrectos.';
+      } else if (error.message.includes('No se pudo obtener la información')) {
+        description = error.message;
       }
       toast({
         variant: 'destructive',
@@ -102,11 +90,32 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const user = await loginWithGoogle();
-      await handleSuccessfulLogin(user);
+       if (!user || !firestore) {
+        throw new Error('No se pudo obtener la información del usuario de Google.');
+      }
+      
+      const userDocRef = doc(firestore, 'users', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+      
+      if (userDocSnap.exists() && userDocSnap.data().role === 'admin') {
+        toast({
+          title: 'Inicio de Sesión Exitoso',
+          description: 'Bienvenido, administrador. Redirigiendo...',
+        });
+        router.push('/admin');
+      } else {
+        toast({
+          title: 'Inicio de Sesión Exitoso',
+          description: 'Bienvenido de nuevo.',
+        });
+        router.push('/profile');
+      }
     } catch (error: any) {
       let description = error.message || 'No se pudo iniciar sesión con Google.';
       if (error.code === 'auth/account-exists-with-different-credential') {
          description = 'Este correo ya fue registrado con contraseña. Por favor, inicia sesión con tu contraseña.';
+      } else if (error.message.includes('No se pudo obtener la información')) {
+        description = error.message;
       }
       toast({
         variant: 'destructive',
