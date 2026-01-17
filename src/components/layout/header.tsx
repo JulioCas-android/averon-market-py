@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, User, Menu } from 'lucide-react';
+import { ShoppingCart, User, Menu, Loader2 } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
 import { useAuth } from '@/hooks/use-auth';
 import { CartSheet } from '@/components/cart-sheet';
@@ -21,7 +21,7 @@ const NavLinks = ({ onLinkClick }: { onLinkClick?: () => void }) => (
 
 export function Header() {
   const { items } = useCart();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
@@ -82,12 +82,21 @@ export function Header() {
             )}
             <span className="sr-only">Shopping Cart</span>
           </Button>
-          <Link href={user ? '/profile' : '/login'}>
-            <Button variant="ghost" size="icon">
-              <User className="h-5 w-5" />
-              <span className="sr-only">User Account</span>
+
+          {authLoading ? (
+            <Button variant="ghost" size="icon" disabled>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span className="sr-only">Cargando cuenta de usuario</span>
             </Button>
-          </Link>
+          ) : (
+            <Link href={user ? '/profile' : '/login'}>
+              <Button variant="ghost" size="icon">
+                <User className="h-5 w-5" />
+                <span className="sr-only">User Account</span>
+              </Button>
+            </Link>
+          )}
+
         </div>
       </div>
       <CartSheet open={isCartOpen} onOpenChange={setIsCartOpen} />

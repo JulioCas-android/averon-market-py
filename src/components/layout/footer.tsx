@@ -21,7 +21,7 @@ const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 
 export function Footer() {
-  const [year, setYear] = useState(new Date().getFullYear());
+  const [year, setYear] = useState<number | null>(null);
 
   useEffect(() => {
     setYear(new Date().getFullYear());
@@ -71,7 +71,7 @@ export function Footer() {
             <Link href="/login" className="opacity-50 hover:opacity-100" aria-label="Iniciar sesión para administrar el sitio">
                 &copy;
             </Link>
-            {' '}{year} AVERON Market PY. Todos los derechos reservados.
+            {year && ` ${year} `}AVERON Market PY. Todos los derechos reservados.
           </p>
         </div>
       </div>
