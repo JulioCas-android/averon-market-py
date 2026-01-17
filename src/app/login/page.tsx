@@ -45,8 +45,11 @@ export default function LoginPage() {
     },
   });
   
-  const checkRoleAndRedirect = async (user: FirebaseUser) => {
-    if (!user) return;
+  const checkRoleAndRedirect = async (user: FirebaseUser | null) => {
+    if (!user || !firestore) {
+      router.push('/profile'); // Fallback to default profile page
+      return;
+    }
 
     try {
       const userDocRef = doc(firestore, 'users', user.uid);
@@ -63,18 +66,20 @@ export default function LoginPage() {
           return;
         }
       }
-      // Redirección por defecto para no-admins o si el perfil no existe
+      
+      // Default redirection for non-admins or if profile doesn't have a role
       toast({
         title: 'Inicio de Sesión Exitoso',
         description: 'Bienvenido de nuevo.',
       });
       router.push('/profile');
+
     } catch (error) {
       console.error("Error al verificar el rol del usuario:", error);
-      // Redirección de respaldo en caso de error
+      // Fallback redirection in case of error
       toast({
         title: 'Inicio de Sesión Exitoso',
-        description: 'Bienvenido de nuevo.',
+        description: 'Bienvenido de nuevo (con error de rol).',
       });
       router.push('/profile');
     }
@@ -102,11 +107,19 @@ export default function LoginPage() {
       const user = await loginWithGoogle();
       await checkRoleAndRedirect(user);
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error de Inicio de Sesión con Google',
-        description: error.message || 'No se pudo iniciar sesión. Por favor, inténtalo de nuevo.',
-      });
+      if (error.code === 'auth/account-exists-with-different-credential') {
+         toast({
+            variant: 'destructive',
+            title: 'Correo ya en uso',
+            description: 'Este correo fue registrado con contraseña. Por favor, inicia sesión con tu contraseña.',
+          });
+      } else {
+        toast({
+            variant: 'destructive',
+            title: 'Error de Inicio de Sesión con Google',
+            description: error.message || 'No se pudo iniciar sesión. Por favor, inténtalo de nuevo.',
+        });
+      }
       setIsLoading(false);
     }
   };
