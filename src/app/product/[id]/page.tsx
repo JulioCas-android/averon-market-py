@@ -1,10 +1,10 @@
-
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useDoc, useCollection } from '@/firebase';
+import { useDoc, useCollection, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, Truck, ShieldCheck, Heart, Minus, Plus } from 'lucide-react';
@@ -49,9 +49,12 @@ export default function ProductDetailPage() {
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const { addItem } = useCart();
   const { toast } = useToast();
+  const firestore = useFirestore();
   
   const { data: product, loading: productLoading } = useDoc<Product>(`products/${id}`);
-  const { data: allProducts, loading: relatedLoading } = useCollection<Product>('products');
+  
+  const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
+  const { data: allProducts, loading: relatedLoading } = useCollection<Product>(productsQuery);
 
   const [quantity, setQuantity] = useState(1);
   const [soldCount, setSoldCount] = useState(0);

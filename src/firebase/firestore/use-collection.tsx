@@ -1,35 +1,25 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  collection,
   onSnapshot,
-  query,
-  where,
   type Query,
   type DocumentData,
   type QuerySnapshot,
   type FirestoreError,
 } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 export function useCollection<T extends DocumentData>(
-  collectionPath: string | null | undefined
+  query: Query<DocumentData> | null | undefined
 ) {
-  const db = useFirestore();
   const [data, setData] = useState<T[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<FirestoreError | null>(null);
 
-  const colRef = useMemo(() => {
-    if (!collectionPath) return null;
-    return collection(db, collectionPath);
-  }, [db, collectionPath]);
-
   useEffect(() => {
-    if (!colRef) {
+    if (!query) {
       setData(null);
       setLoading(false);
       return;
@@ -38,7 +28,7 @@ export function useCollection<T extends DocumentData>(
     setLoading(true);
 
     const unsubscribe = onSnapshot(
-      colRef,
+      query,
       (snapshot: QuerySnapshot<DocumentData>) => {
         const result: T[] = [];
         snapshot.forEach((doc) => {
@@ -48,11 +38,13 @@ export function useCollection<T extends DocumentData>(
         setLoading(false);
         setError(null);
       },
-      async (err: FirestoreError) => {
+      (err: FirestoreError) => {
         setError(err);
         setLoading(false);
+        // It's hard to get a precise path from a generic query object.
+        // We will pass a generic path for the error context.
         const permissionError = new FirestorePermissionError({
-          path: colRef.path,
+          path: 'collection query',
           operation: 'list',
         });
         errorEmitter.emit('permission-error', permissionError);
@@ -60,7 +52,7 @@ export function useCollection<T extends DocumentData>(
     );
 
     return () => unsubscribe();
-  }, [colRef]);
+  }, [query]); // The dependency is now the query object itself.
 
   return { data, loading, error };
 }

@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth, useCollection } from '@/firebase';
+import { useAuth, useCollection, useFirestore } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -14,15 +15,20 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function ProfilePage() {
   const { user, logout, loading: authLoading } = useAuth();
   const router = useRouter();
+  const firestore = useFirestore();
 
-  const { data: allOrders, loading: ordersLoading } = useCollection<Order>('orders');
+  const userOrdersQuery = useMemo(() => {
+    if (!user || !firestore) return null;
+    return query(collection(firestore, 'orders'), where('userId', '==', user.uid));
+  }, [user, firestore]);
+
+  const { data: fetchedOrders, loading: ordersLoading } = useCollection<Order>(userOrdersQuery);
 
   const userOrders = useMemo(() => {
-    if (!allOrders || !user) return [];
-    return allOrders
-      .filter(order => order.userId === user.uid)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [allOrders, user]);
+    if (!fetchedOrders) return [];
+    return [...fetchedOrders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [fetchedOrders]);
+
 
   const loading = authLoading || !user;
 

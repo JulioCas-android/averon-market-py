@@ -1,0 +1,36 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      // For this to work, a user document in /users/{uid} must have a `role: 'admin'` field.
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Products are publicly readable. Only admins can create/update/delete them.
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // A user can create, read, and update their own profile.
+    match /users/{userId} {
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Orders can be created by anyone (guest checkout).
+    // They can be read by their owner or an admin.
+    // They can be listed by any authenticated user (for profile page) or admin (for admin panel).
+    // WARNING: A more secure `list` rule would require data restructuring (e.g., user subcollections).
+    // They can only be updated by an admin.
+    match /orders/{orderId} {
+      allow create: if true;
+      allow get: if (request.auth != null && resource.data.userId == request.auth.uid) || isAdmin();
+      allow list: if request.auth != null;
+      allow update: if isAdmin();
+      allow delete: if false; // Orders should not be deleted.
+    }
+  }
+}

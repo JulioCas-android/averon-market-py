@@ -1,7 +1,7 @@
 'use client';
 
 import { useCollection, useFirestore } from '@/firebase';
-import { addDoc, collection, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, updateDoc, query } from 'firebase/firestore';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -61,8 +61,10 @@ const orderStatuses: Order['status'][] = ['Procesando', 'Pendiente de Pago', 'Pa
 
 export default function AdminPage() {
   const firestore = useFirestore();
-  const { data: products, loading: productsLoading } = useCollection<Product>('products');
-  const { data: orders, loading: ordersLoading } = useCollection<Order>('orders');
+  const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
+  const { data: products, loading: productsLoading } = useCollection<Product>(productsQuery);
+  const ordersQuery = useMemo(() => firestore ? collection(firestore, 'orders') : null, [firestore]);
+  const { data: orders, loading: ordersLoading } = useCollection<Order>(ordersQuery);
   const { toast } = useToast();
   
   // State for form submissions
@@ -124,6 +126,7 @@ export default function AdminPage() {
   };
 
   const onCreateSubmit = async (values: z.infer<typeof productSchema>) => {
+    if (!firestore) return;
     setIsSubmitting(true);
     const productsCollection = collection(firestore, 'products');
     const dataToSave = { ...values };
@@ -144,7 +147,7 @@ export default function AdminPage() {
   };
   
   const onUpdateSubmit = async (values: z.infer<typeof productSchema>) => {
-    if (!editingProduct) return;
+    if (!editingProduct || !firestore) return;
     setIsSubmitting(true);
     const productDocRef = doc(firestore, 'products', editingProduct.id);
     
@@ -168,7 +171,7 @@ export default function AdminPage() {
   };
 
   const handleDelete = async () => {
-    if (!deletingProduct) return;
+    if (!deletingProduct || !firestore) return;
     const productDocRef = doc(firestore, 'products', deletingProduct.id);
     deleteDoc(productDocRef)
       .then(() => {

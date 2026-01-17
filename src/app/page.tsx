@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
-import { useCollection } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
 import { ProductCard } from '@/components/product-card';
 import { Input } from '@/components/ui/input';
@@ -12,7 +13,9 @@ import { Search, PackageCheck, Truck, ShieldCheck } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
-  const { data: allProducts, loading } = useCollection<Product>('products');
+  const firestore = useFirestore();
+  const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
+  const { data: allProducts, loading } = useCollection<Product>(productsQuery);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('all');
@@ -97,17 +100,17 @@ export default function Home() {
       <section className="container mx-auto pb-12 px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="flex flex-col items-center group">
-                <PackageCheck className="w-12 h-12 text-primary mb-4 transition-transform duration-300 group-hover:scale-110" />
+                <PackageCheck className="w-12 h-12 text-primary mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:animate-pulse" />
                 <h3 className="text-xl font-semibold mb-2">Calidad Garantizada</h3>
                 <p className="text-muted-foreground">Productos seleccionados para asegurar tu satisfacción.</p>
             </div>
             <div className="flex flex-col items-center group">
-                <Truck className="w-12 h-12 text-primary mb-4 transition-transform duration-300 group-hover:scale-110" />
+                <Truck className="w-12 h-12 text-primary mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:animate-pulse" />
                 <h3 className="text-xl font-semibold mb-2">Envío Rápido</h3>
                 <p className="text-muted-foreground">Recibe tus compras en la puerta de tu casa.</p>
             </div>
             <div className="flex flex-col items-center group">
-                <ShieldCheck className="w-12 h-12 text-primary mb-4 transition-transform duration-300 group-hover:scale-110" />
+                <ShieldCheck className="w-12 h-12 text-primary mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:animate-pulse" />
                 <h3 className="text-xl font-semibold mb-2">Pago Seguro</h3>
                 <p className="text-muted-foreground">Tus transacciones están protegidas con nosotros.</p>
             </div>
