@@ -44,10 +44,10 @@ export function WhatsAppFAB() {
         <PopoverTrigger asChild>
             <Button
                 variant="default"
-                className="fixed bottom-6 right-6 z-50 rounded-full h-14 w-14 bg-[#25D366] hover:bg-[#128C7E] shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 animate-subtle-pulse"
+                className="fixed bottom-6 right-6 z-50 rounded-full h-16 w-16 bg-[#25D366] hover:bg-[#128C7E] shadow-xl focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
                 aria-label="Contactar por WhatsApp"
             >
-                 <WhatsAppIcon className="h-10 w-10 text-white" />
+                 <WhatsAppIcon className="h-9 w-9 text-white" />
             </Button>
         </PopoverTrigger>
         <PopoverContent className="w-80 mr-4 mb-2 p-0 border-0 bg-transparent shadow-none" side="top" align="end">
