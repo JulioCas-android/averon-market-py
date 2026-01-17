@@ -1,8 +1,11 @@
+'use client';
+
 import { Logo } from '@/components/logo';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Facebook, Instagram } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg
@@ -18,6 +21,12 @@ const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 
 export function Footer() {
+  const [year, setYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
+
   return (
     <footer className="bg-muted text-muted-foreground border-t">
       <div className="container mx-auto px-4 py-12">
@@ -62,7 +71,7 @@ export function Footer() {
             <Link href="/login" className="opacity-50 hover:opacity-100" aria-label="Iniciar sesión para administrar el sitio">
                 &copy;
             </Link>
-            {' '}{new Date().getFullYear()} AVERON Market PY. Todos los derechos reservados.
+            {' '}{year} AVERON Market PY. Todos los derechos reservados.
           </p>
         </div>
       </div>
