@@ -7,6 +7,7 @@ import {
   type DocumentData,
   type QuerySnapshot,
   type FirestoreError,
+  type CollectionReference,
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -41,10 +42,15 @@ export function useCollection<T extends DocumentData>(
       (err: FirestoreError) => {
         setError(err);
         setLoading(false);
-        // It's hard to get a precise path from a generic query object.
-        // We will pass a generic path for the error context.
+        
+        let path = 'unknown collection';
+        // Check if the query is a CollectionReference which has a .path property
+        if (query && 'path' in query) {
+          path = (query as CollectionReference).path;
+        }
+
         const permissionError = new FirestorePermissionError({
-          path: 'collection query',
+          path: path,
           operation: 'list',
         });
         errorEmitter.emit('permission-error', permissionError);

@@ -1,11 +1,11 @@
 'use client';
 
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useAuth, useDoc } from '@/firebase';
 import { addDoc, collection, deleteDoc, doc, updateDoc, query } from 'firebase/firestore';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import type { Product, Order } from '@/lib/types';
+import type { Product, Order, UserProfile } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Loader2, Sparkles, Upload, Pencil, Trash2, Package, ShoppingCart as ShoppingCartIcon } from 'lucide-react';
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { generateProductImageAction, generateProductDescriptionAction, suggestProductCategoryAction } from '@/app/actions';
 import {
@@ -41,6 +41,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useRouter } from 'next/navigation';
 
 
 const productSchema = z.object({
@@ -60,22 +61,40 @@ const orderStatuses: Order['status'][] = ['Procesando', 'Pendiente de Pago', 'Pa
 
 
 export default function AdminPage() {
-  const firestore = useFirestore();
-  const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
-  const { data: products, loading: productsLoading } = useCollection<Product>(productsQuery);
-  const ordersQuery = useMemo(() => firestore ? collection(firestore, 'orders') : null, [firestore]);
-  const { data: orders, loading: ordersLoading } = useCollection<Order>(ordersQuery);
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const { toast } = useToast();
+
+  const { data: userProfile, loading: profileLoading } = useDoc<UserProfile>(user ? `users/${user.uid}` : null);
   
-  // State for form submissions
+  const isAuthorized = useMemo(() => userProfile?.role === 'admin', [userProfile]);
+
+  useEffect(() => {
+    if (!authLoading && !profileLoading) {
+      if (!user || !isAuthorized) {
+        toast({
+            variant: 'destructive',
+            title: 'Acceso Denegado',
+            description: 'Debes ser un administrador para ver esta página.',
+        });
+        router.replace('/');
+      }
+    }
+  }, [authLoading, profileLoading, user, isAuthorized, router, toast]);
+
+  const firestore = useFirestore();
+  // Prevent queries from running if not authorized
+  const productsQuery = useMemo(() => (isAuthorized && firestore) ? collection(firestore, 'products') : null, [firestore, isAuthorized]);
+  const { data: products, loading: productsLoading } = useCollection<Product>(productsQuery);
+  const ordersQuery = useMemo(() => (isAuthorized && firestore) ? collection(firestore, 'orders') : null, [firestore, isAuthorized]);
+  const { data: orders, loading: ordersLoading } = useCollection<Order>(ordersQuery);
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // State for AI generation
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isSuggestingCategory, setIsSuggestingCategory] = useState(false);
 
-  // State for editing and deleting
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
@@ -249,6 +268,19 @@ export default function AdminPage() {
         errorEmitter.emit('permission-error', permissionError);
       });
   };
+
+  const isLoading = authLoading || profileLoading;
+  if (isLoading || !isAuthorized) {
+    return (
+        <div className="container mx-auto px-4 py-12 flex items-center justify-center h-[70vh]">
+            <div className="text-center">
+                <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary mb-4" />
+                <h2 className="text-xl font-semibold">Verificando permisos...</h2>
+                <p className="text-muted-foreground">Un momento, por favor.</p>
+            </div>
+        </div>
+    );
+  }
 
   // Common form fields component to avoid repetition
   const ProductFormFields = () => (
