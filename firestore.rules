@@ -10,7 +10,7 @@ service cloud.firestore {
 
     // Products are publicly readable. Only admins can create/update/delete them.
     match /products/{productId} {
-      allow get, list: if true;
+      allow read: if true;
       allow write: if isAdmin();
     }
 
