@@ -17,7 +17,6 @@ import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import type { User as FirebaseUser } from 'firebase/auth';
-import type { UserProfile } from '@/lib/types';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -45,52 +44,57 @@ export default function LoginPage() {
       password: '',
     },
   });
-  
-  // This function can now throw an error, which will be caught by the caller
-  const checkRoleAndRedirect = async (user: FirebaseUser | null) => {
+
+  const handleSuccessfulLogin = async (user: FirebaseUser) => {
     if (!user || !firestore) {
-      router.push('/profile'); // Fallback if something is wrong
+      toast({ variant: "destructive", title: "Error", description: "No se pudo obtener la información del usuario." });
+      setIsLoading(false);
       return;
     }
 
-    // This getDoc call might fail if security rules are incorrect
-    const userDocRef = doc(firestore, 'users', user.uid);
-    const userDocSnap = await getDoc(userDocRef);
+    try {
+      const userDocRef = doc(firestore, 'users', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
 
-    if (userDocSnap.exists()) {
-      const userProfile = userDocSnap.data() as UserProfile;
-      if (userProfile.role === 'admin') {
-        toast({ title: 'Inicio de Sesión Exitoso', description: 'Bienvenido, administrador. Redirigiendo...' });
+      if (userDocSnap.exists() && userDocSnap.data().role === 'admin') {
+        toast({
+          title: 'Inicio de Sesión Exitoso',
+          description: 'Bienvenido, administrador. Redirigiendo...',
+        });
         router.push('/admin');
-        return;
+      } else {
+        toast({
+          title: 'Inicio de Sesión Exitoso',
+          description: 'Bienvenido de nuevo.',
+        });
+        router.push('/profile');
       }
+    } catch (error) {
+       toast({
+        variant: "destructive",
+        title: 'Error de Redirección',
+        description: 'No se pudo verificar tu rol de usuario. Redirigiendo al perfil.',
+      });
+      router.push('/profile');
     }
-    
-    // Default redirection for non-admins or if profile doesn't exist/have a role
-    toast({ title: 'Inicio de Sesión Exitoso', description: 'Bienvenido de nuevo.' });
-    router.push('/profile');
   };
 
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
     setIsLoading(true);
     try {
       const user = await login(values.email, values.password);
-      await checkRoleAndRedirect(user);
+      await handleSuccessfulLogin(user);
     } catch (error: any) {
       let description = 'Credenciales incorrectas o problema de conexión.';
-      // Check for specific Firebase errors to provide better feedback
       if (error.code === 'auth/invalid-credential') {
         description = 'El correo electrónico o la contraseña son incorrectos.';
-      } else if (error.name === 'FirestorePermissionError' || (error.code && error.code.includes('permission-denied'))) {
-        description = 'Inicio de sesión correcto, pero no se pudo verificar tu rol. Revisa los permisos de la base de datos.';
       }
-      
       toast({
         variant: 'destructive',
         title: 'Error de Inicio de Sesión',
         description: description,
       });
-      setIsLoading(false); // IMPORTANT: Stop loading on any error
+      setIsLoading(false);
     }
   };
   
@@ -98,21 +102,18 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const user = await loginWithGoogle();
-      await checkRoleAndRedirect(user);
+      await handleSuccessfulLogin(user);
     } catch (error: any) {
       let description = error.message || 'No se pudo iniciar sesión con Google.';
       if (error.code === 'auth/account-exists-with-different-credential') {
          description = 'Este correo ya fue registrado con contraseña. Por favor, inicia sesión con tu contraseña.';
-      } else if (error.name === 'FirestorePermissionError' || (error.code && error.code.includes('permission-denied'))) {
-        description = 'Inicio de sesión correcto, pero no se pudo verificar tu rol. Revisa los permisos de la base de datos.';
       }
-      
       toast({
-            variant: 'destructive',
-            title: 'Error de Inicio de Sesión',
-            description: description,
+        variant: 'destructive',
+        title: 'Error de Inicio de Sesión',
+        description: description,
       });
-      setIsLoading(false); // IMPORTANT: Stop loading on any error
+      setIsLoading(false);
     }
   };
 
