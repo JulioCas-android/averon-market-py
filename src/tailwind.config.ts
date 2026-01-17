@@ -89,21 +89,21 @@ export default {
           },
         },
         'subtle-pulse': {
-          '0%': {
-            boxShadow: '0 0 0 0 rgba(37, 211, 102, 0.5)',
+          '0%, 100%': {
+            boxShadow: '0 0 0 0 rgba(37, 211, 102, 0.0)'
           },
-          '70%': {
-            boxShadow: '0 0 0 12px rgba(37, 211, 102, 0)',
+          '10%': {
+            boxShadow: '0 0 0 15px rgba(37, 211, 102, 0.4)'
           },
-          '100%': {
-            boxShadow: '0 0 0 0 rgba(37, 211, 102, 0)',
+          '25%': {
+            boxShadow: '0 0 0 20px rgba(37, 211, 102, 0.0)'
           },
         },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'subtle-pulse': 'subtle-pulse 4.5s infinite',
+        'subtle-pulse': 'subtle-pulse 8s infinite cubic-bezier(0.66, 0, 0, 1)',
       },
     },
   },
