@@ -115,7 +115,7 @@ export default function ProfilePage() {
                     <TableRow><TableCell colSpan={4} className="h-24 text-center">Cargando tus pedidos...</TableCell></TableRow>
                   ) : userOrders.length > 0 ? (
                     userOrders.map((order) => (
-                      <TableRow key={order.id}>
+                      <TableRow key={order.id} className="cursor-pointer" onClick={() => router.push(`/order/${order.id}`)}>
                         <TableCell className="font-medium font-mono text-xs">#{order.id.substring(0, 7)}...</TableCell>
                         <TableCell>{new Date(order.createdAt).toLocaleDateString('es-PY')}</TableCell>
                         <TableCell>{order.status}</TableCell>

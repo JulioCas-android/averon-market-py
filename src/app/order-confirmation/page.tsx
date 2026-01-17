@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 export default function OrderConfirmationPage() {
   const router = useRouter();
@@ -21,20 +22,20 @@ export default function OrderConfirmationPage() {
   }, [searchParams]);
 
   let title = "¡Pedido Confirmado!";
-  let message = `Tu pedido ${orderId ? `(#${orderId})` : ''} ha sido registrado con éxito.`;
+  let message = `Tu pedido ${orderId ? `(#${orderId.substring(0,7)}...)` : ''} ha sido registrado con éxito.`;
 
   switch (paymentMethod) {
     case 'ONLINE':
       title = "¡Pago Exitoso!";
-      message = `Tu pago ha sido procesado exitosamente. Recibirás una confirmación por correo electrónico para tu pedido ${orderId ? `#${orderId}` : ''}.`;
+      message = `Tu pago ha sido procesado exitosamente. Recibirás una confirmación por correo electrónico para tu pedido ${orderId ? `#${orderId.substring(0,7)}...` : ''}.`;
       break;
     case 'COD':
-      message = `Tu pedido ${orderId ? `#${orderId}` : ''} ha sido registrado y será procesado pronto. Pagarás al momento de la entrega.`;
+      message = `Tu pedido ${orderId ? `#${orderId.substring(0,7)}...` : ''} ha sido registrado y será procesado pronto. Pagarás al momento de la entrega.`;
       break;
     case 'TRNF':
     case 'EWALLET':
     case 'DOWN_PAYMENT':
-      message = `Tu pedido ${orderId ? `#${orderId}` : ''} está pendiente de pago. Por favor, realiza el pago correspondiente y envía el comprobante para confirmarlo.`;
+      message = `Tu pedido ${orderId ? `#${orderId.substring(0,7)}...` : ''} está pendiente de pago. Por favor, realiza el pago correspondiente y envía el comprobante para confirmarlo.`;
       break;
   }
 
@@ -51,9 +52,16 @@ export default function OrderConfirmationPage() {
         </CardHeader>
         <CardContent>
           <p className="mb-8">{message}</p>
-          <Button onClick={() => router.push('/')} className="w-full max-w-xs">
-            Seguir Comprando
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button onClick={() => router.push('/')} className="w-full sm:w-auto">
+                Seguir Comprando
+            </Button>
+            {orderId && (
+                <Button asChild variant="outline" className="w-full sm:w-auto">
+                    <Link href={`/order/${orderId}`}>Ver Detalles del Pedido</Link>
+                </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
