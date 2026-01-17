@@ -13,44 +13,44 @@ service cloud.firestore {
     }
     
     function isAdmin() {
-      // Check if the user is authenticated and their role in the /users collection is 'admin'.
+      // Revisa si el usuario autenticado tiene el rol de 'admin' en su perfil.
       return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
     // --- Collection Rules ---
 
-    // Products:
-    // - Anyone, authenticated or not, can read the list of products or a single product.
-    // - Only admins can create, update, or delete products.
+    // Productos:
+    // - Cualquiera puede leer la lista de productos o un producto individual.
+    // - Solo los administradores pueden crear, actualizar o eliminar productos.
     match /products/{productId} {
-      allow get, list: if true;
+      allow read: if true;
       allow write: if isAdmin();
     }
 
-    // User Profiles:
-    // - Users can create their own profile, but must set their role to 'customer'.
-    // - Users can read their own profile. Admins can read any profile.
-    // - Admins can update any profile (including changing roles).
-    // - A user can update their own profile, but CANNOT change their own role.
+    // Perfiles de Usuario:
+    // - Un usuario puede crear su propio perfil (al registrarse) y su rol debe ser 'customer'.
+    // - Un usuario puede leer su propio perfil. Un admin puede leer cualquier perfil.
+    // - Un usuario puede actualizar su propio perfil, pero NO PUEDE cambiar su rol.
+    // - Solo un admin puede actualizar el rol de un usuario.
     match /users/{userId} {
       allow create: if isOwner(userId) && request.resource.data.role == 'customer';
-      allow get: if isOwner(userId) || isAdmin();
+      allow read: if isOwner(userId) || isAdmin();
       allow update: if isAdmin() || (isOwner(userId) && request.resource.data.role == resource.data.role);
-      allow delete: if false; // Profiles cannot be deleted.
+      allow delete: if false; // Por seguridad, no se permite eliminar perfiles.
     }
 
-    // Orders:
-    // - Anyone (including guests) can create an order.
-    // - Registered users can read their own individual orders.
-    // - Admins can read any order and list all orders.
-    // - A user can only list their own orders via a query.
-    // - Only admins can update an order's status.
+    // Pedidos:
+    // - Cualquiera (incluso invitados) puede crear un pedido.
+    // - Los usuarios registrados solo pueden leer sus propios pedidos.
+    // - Los administradores pueden leer todos los pedidos.
+    // - Un usuario solo puede listar sus propios pedidos, no los de otros.
+    // - Solo los administradores pueden actualizar el estado de un pedido.
     match /orders/{orderId} {
       allow create: if true;
       allow get: if (isSignedIn() && resource.data.userId == request.auth.uid) || isAdmin();
       allow list: if isAdmin() || (isSignedIn() && request.query.where[0] == ['userId', '==', request.auth.uid]);
       allow update: if isAdmin();
-      allow delete: if false; // Orders cannot be deleted for safety.
+      allow delete: if false; // Por seguridad, no se permite eliminar pedidos.
     }
   }
 }
