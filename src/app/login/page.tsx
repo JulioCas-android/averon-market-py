@@ -14,6 +14,10 @@ import { useToast } from '@/hooks/use-toast';
 import { Logo } from '@/components/logo';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useFirestore } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import type { User as FirebaseUser } from 'firebase/auth';
+import type { UserProfile } from '@/lib/types';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -28,6 +32,7 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export default function LoginPage() {
   const { login, loginWithGoogle } = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -39,43 +44,69 @@ export default function LoginPage() {
       password: '',
     },
   });
+  
+  const checkRoleAndRedirect = async (user: FirebaseUser) => {
+    if (!user) return;
 
-  const onSubmit = async (values: z.infer<typeof loginSchema>) => {
-    setIsLoading(true);
     try {
-      await login(values.email, values.password);
+      const userDocRef = doc(firestore, 'users', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const userProfile = userDocSnap.data() as UserProfile;
+        if (userProfile.role === 'admin') {
+          toast({
+            title: 'Inicio de Sesión Exitoso',
+            description: 'Bienvenido, administrador.',
+          });
+          router.push('/admin');
+          return;
+        }
+      }
+      // Redirección por defecto para no-admins o si el perfil no existe
       toast({
         title: 'Inicio de Sesión Exitoso',
         description: 'Bienvenido de nuevo.',
       });
       router.push('/profile');
     } catch (error) {
+      console.error("Error al verificar el rol del usuario:", error);
+      // Redirección de respaldo en caso de error
+      toast({
+        title: 'Inicio de Sesión Exitoso',
+        description: 'Bienvenido de nuevo.',
+      });
+      router.push('/profile');
+    }
+  };
+
+
+  const onSubmit = async (values: z.infer<typeof loginSchema>) => {
+    setIsLoading(true);
+    try {
+      const user = await login(values.email, values.password);
+      await checkRoleAndRedirect(user);
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Error de Inicio de Sesión',
         description: 'Credenciales incorrectas. Por favor, inténtalo de nuevo.',
       });
-    } finally {
-      setIsLoading(false);
+       setIsLoading(false);
     }
   };
   
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      await loginWithGoogle();
-      toast({
-        title: 'Inicio de Sesión Exitoso',
-        description: 'Bienvenido de nuevo.',
-      });
-      router.push('/profile');
+      const user = await loginWithGoogle();
+      await checkRoleAndRedirect(user);
     } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Error de Inicio de Sesión con Google',
         description: error.message || 'No se pudo iniciar sesión. Por favor, inténtalo de nuevo.',
       });
-    } finally {
       setIsLoading(false);
     }
   };

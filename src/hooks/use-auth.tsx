@@ -21,10 +21,10 @@ import { FirestorePermissionError } from '@/firebase/errors';
 interface AuthContextType {
   user: FirebaseUser | null;
   loading: boolean;
-  login: (email: string, pass: string) => Promise<void>;
+  login: (email: string, pass: string) => Promise<FirebaseUser>;
   logout: () => Promise<void>;
   register: (name: string, email: string, pass: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: () => Promise<FirebaseUser>;
   sendPasswordReset: (email: string) => Promise<void>;
 }
 
@@ -45,7 +45,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [auth]);
 
   const login = async (email: string, pass: string) => {
-    await signInWithEmailAndPassword(auth, email, pass);
+    const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+    return userCredential.user;
   };
 
   const logout = async () => {
@@ -74,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             errorEmitter.emit('permission-error', permissionError);
         });
     }
+    return user;
   };
 
   const register = async (name: string, email: string, pass: string) => {
