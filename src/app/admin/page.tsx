@@ -1,7 +1,7 @@
 'use client';
 
-import { useCollection, useFirestore, useAuth, useDoc } from '@/firebase';
-import { addDoc, collection, deleteDoc, doc, updateDoc, query } from 'firebase/firestore';
+import { useCollection, useFirestore, useAuth } from '@/firebase';
+import { addDoc, collection, deleteDoc, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -62,27 +62,59 @@ const orderStatuses: Order['status'][] = ['Procesando', 'Pendiente de Pago', 'Pa
 
 export default function AdminPage() {
   const { user, loading: authLoading } = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
-
-  const { data: userProfile, loading: profileLoading } = useDoc<UserProfile>(user ? `users/${user.uid}` : null);
   
-  const isAuthorized = useMemo(() => userProfile?.role === 'admin', [userProfile]);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !profileLoading) {
-      if (!user || !isAuthorized) {
+    if (authLoading) return;
+
+    const checkAdminStatus = async () => {
+      if (!user) {
         toast({
+          variant: 'destructive',
+          title: 'Acceso Denegado',
+          description: 'Debes iniciar sesión para acceder a esta página.',
+        });
+        router.replace('/login');
+        return;
+      }
+
+      try {
+        const userDocRef = doc(firestore, 'users', user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (userDocSnap.exists() && userDocSnap.data().role === 'admin') {
+          setIsAuthorized(true);
+        } else {
+          setIsAuthorized(false);
+          toast({
             variant: 'destructive',
             title: 'Acceso Denegado',
             description: 'Debes ser un administrador para ver esta página.',
+          });
+          router.replace('/');
+        }
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+        setIsAuthorized(false);
+        toast({
+            variant: 'destructive',
+            title: 'Error de Permisos',
+            description: 'No se pudo verificar tu rol de usuario.',
         });
         router.replace('/');
+      } finally {
+        setAuthChecked(true);
       }
-    }
-  }, [authLoading, profileLoading, user, isAuthorized, router, toast]);
+    };
 
-  const firestore = useFirestore();
+    checkAdminStatus();
+  }, [authLoading, user, firestore, router, toast]);
+
   // Prevent queries from running if not authorized
   const productsQuery = useMemo(() => (isAuthorized && firestore) ? collection(firestore, 'products') : null, [firestore, isAuthorized]);
   const { data: products, loading: productsLoading } = useCollection<Product>(productsQuery);
@@ -269,8 +301,7 @@ export default function AdminPage() {
       });
   };
 
-  const isLoading = authLoading || profileLoading;
-  if (isLoading || !isAuthorized) {
+  if (!authChecked || !isAuthorized) {
     return (
         <div className="container mx-auto px-4 py-12 flex items-center justify-center h-[70vh]">
             <div className="text-center">
@@ -527,3 +558,5 @@ export default function AdminPage() {
     </div>
   );
 }
+
+    
