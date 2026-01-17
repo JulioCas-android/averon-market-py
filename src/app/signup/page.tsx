@@ -67,18 +67,14 @@ export default function SignupPage() {
     setIsLoading(true);
     try {
       await loginWithGoogle();
-      toast({
-        title: 'Registro Exitoso',
-        description: 'Tu cuenta ha sido creada con Google.',
-      });
-      router.push('/profile');
+      // La página se redirigirá. La lógica de creación de usuario y redirección
+      // ahora se maneja centralmente en AuthProvider.
     } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Error de Registro con Google',
         description: error.message || 'No se pudo crear la cuenta. Por favor, inténtalo de nuevo.',
       });
-    } finally {
       setIsLoading(false);
     }
   };

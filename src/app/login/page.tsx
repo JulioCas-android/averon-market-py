@@ -16,7 +16,6 @@ import { useState } from 'react';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import type { User as FirebaseUser } from 'firebase/auth';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -89,33 +88,13 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      const user = await loginWithGoogle();
-       if (!user || !firestore) {
-        throw new Error('No se pudo obtener la información del usuario de Google.');
-      }
-      
-      const userDocRef = doc(firestore, 'users', user.uid);
-      const userDocSnap = await getDoc(userDocRef);
-      
-      if (userDocSnap.exists() && userDocSnap.data().role === 'admin') {
-        toast({
-          title: 'Inicio de Sesión Exitoso',
-          description: 'Bienvenido, administrador. Redirigiendo...',
-        });
-        router.push('/admin');
-      } else {
-        toast({
-          title: 'Inicio de Sesión Exitoso',
-          description: 'Bienvenido de nuevo.',
-        });
-        router.push('/profile');
-      }
+      await loginWithGoogle();
+      // La página se redirigirá, por lo que el código posterior no se ejecutará
+      // en esta misma carga. La lógica post-inicio de sesión está en AuthProvider.
     } catch (error: any) {
       let description = error.message || 'No se pudo iniciar sesión con Google.';
       if (error.code === 'auth/account-exists-with-different-credential') {
          description = 'Este correo ya fue registrado con contraseña. Por favor, inicia sesión con tu contraseña.';
-      } else if (error.message.includes('No se pudo obtener la información')) {
-        description = error.message;
       }
       toast({
         variant: 'destructive',
