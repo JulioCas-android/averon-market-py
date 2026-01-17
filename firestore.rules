@@ -1,36 +1,41 @@
 rules_version = '2';
 
+// Rules for the Averon Market PY Firestore database
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Helper function to check if the user has an 'admin' role.
     function isAdmin() {
-      // For this to work, a user document in /users/{uid} must have a `role: 'admin'` field.
       return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Products are publicly readable. Only admins can create/update/delete them.
+    // Collection: products
+    // Anyone can view products. Only admins can modify them.
     match /products/{productId} {
-      allow read: if true;
+      allow get: if true;
+      allow list: if true;
       allow write: if isAdmin();
     }
 
-    // A user can create, read, and update their own profile.
+    // Collection: users
+    // Users can create and manage their own profile.
     match /users/{userId} {
       allow read, update: if request.auth != null && request.auth.uid == userId;
       allow create: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Orders can be created by anyone (guest checkout).
-    // They can be read by their owner or an admin.
-    // They can be listed by any authenticated user (for profile page) or admin (for admin panel).
-    // WARNING: A more secure `list` rule would require data restructuring (e.g., user subcollections).
-    // They can only be updated by an admin.
+    // Collection: orders
+    // Anyone can create an order (guest checkout).
+    // Admins can manage all orders.
+    // Users can view their own orders via queries filtered on the client.
     match /orders/{orderId} {
       allow create: if true;
       allow get: if (request.auth != null && resource.data.userId == request.auth.uid) || isAdmin();
+      // WARNING: This allows any logged-in user to query the orders collection.
+      // The client-side code MUST filter by userId to prevent data leakage.
       allow list: if request.auth != null;
       allow update: if isAdmin();
-      allow delete: if false; // Orders should not be deleted.
+      allow delete: if false; // Do not allow orders to be deleted.
     }
   }
 }
