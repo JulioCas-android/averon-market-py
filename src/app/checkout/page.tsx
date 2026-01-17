@@ -260,10 +260,6 @@ export default function CheckoutPage() {
                                   <FormMessage />
                               </FormItem>
                           )}/>
-                           <Button type="button" variant="link" className="p-0 h-auto">
-                              <MapPin className="mr-2" />
-                              Agregar en el mapa
-                          </Button>
                       </div>
                   </CardContent>
               ) : (
