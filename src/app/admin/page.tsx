@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useCollection, useFirestore, useAuth } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
 import { addDoc, collection, deleteDoc, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -42,6 +43,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
 
 
 const productSchema = z.object({
@@ -66,13 +68,16 @@ export default function AdminPage() {
   const router = useRouter();
   const { toast } = useToast();
   
-  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const [authorizationStatus, setAuthorizationStatus] = useState<'loading' | 'authorized' | 'unauthorized'>('loading');
 
   useEffect(() => {
+    // Si Firebase Auth todavía está cargando, esperamos y no tomamos ninguna decisión.
     if (authLoading) {
-      return; // Wait until authentication state is loaded
+      setAuthorizationStatus('loading');
+      return;
     }
 
+    // Si la autenticación ha terminado y no hay usuario, no está autorizado.
     if (!user) {
       toast({
         variant: 'destructive',
@@ -80,42 +85,46 @@ export default function AdminPage() {
         description: 'Debes iniciar sesión para acceder a esta página.',
       });
       router.replace('/login');
+      setAuthorizationStatus('unauthorized');
       return;
     }
-    
-    // Only check the role if we haven't already determined authorization
-    if (isAuthorized === null) {
-      const checkAdminRole = async () => {
-        try {
-          const userDocRef = doc(firestore, 'users', user.uid);
-          const userDocSnap = await getDoc(userDocRef);
-          
-          if (userDocSnap.exists() && userDocSnap.data().role === 'admin') {
-            setIsAuthorized(true);
-          } else {
-            setIsAuthorized(false);
-            toast({
-              variant: 'destructive',
-              title: 'Acceso Denegado',
-              description: 'Debes ser un administrador para ver esta página.',
-            });
-            router.replace('/');
-          }
-        } catch (error) {
-          console.error("Error checking admin role:", error);
-          setIsAuthorized(false);
+
+    // Si tenemos un usuario, ahora verificamos su rol en Firestore.
+    const checkAdminRole = async () => {
+      try {
+        const userDocRef = doc(firestore, 'users', user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        
+        if (userDocSnap.exists() && userDocSnap.data().role === 'admin') {
+          // Es un admin, se autoriza el acceso.
+          setAuthorizationStatus('authorized');
+        } else {
+          // No es un admin, se deniega el acceso.
+          setAuthorizationStatus('unauthorized');
           toast({
             variant: 'destructive',
-            title: 'Error de Permisos',
-            description: 'No se pudo verificar tu rol de usuario.',
+            title: 'Acceso Denegado',
+            description: 'Debes ser un administrador para ver esta página.',
           });
           router.replace('/');
         }
-      };
-      
-      checkAdminRole();
-    }
-  }, [user, authLoading, firestore, router, toast, isAuthorized]);
+      } catch (error) {
+        console.error("Error al verificar el rol de administrador:", error);
+        setAuthorizationStatus('unauthorized');
+        toast({
+          variant: 'destructive',
+          title: 'Error de Permisos',
+          description: 'No se pudo verificar tu rol de usuario.',
+        });
+        router.replace('/');
+      }
+    };
+    
+    checkAdminRole();
+    
+  }, [user, authLoading, firestore, router, toast]);
+
+  const isAuthorized = authorizationStatus === 'authorized';
 
   const productsQuery = useMemo(() => (isAuthorized && firestore) ? collection(firestore, 'products') : null, [firestore, isAuthorized]);
   const { data: products, loading: productsLoading } = useCollection<Product>(productsQuery);
@@ -302,7 +311,7 @@ export default function AdminPage() {
       });
   };
 
-  if (authLoading || isAuthorized === null) {
+  if (authorizationStatus !== 'authorized') {
     return (
         <div className="container mx-auto px-4 py-12 flex items-center justify-center h-[70vh]">
             <div className="text-center">
@@ -314,10 +323,6 @@ export default function AdminPage() {
     );
   }
   
-  if (!isAuthorized) {
-      return null; // Should have been redirected, but this prevents flashing content.
-  }
-
   // Common form fields component to avoid repetition
   const ProductFormFields = () => (
     <>
@@ -563,3 +568,5 @@ export default function AdminPage() {
     </div>
   );
 }
+
+    
