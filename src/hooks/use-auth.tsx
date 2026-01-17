@@ -33,10 +33,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const auth = useFirebaseAuth();
   const firestore = useFirestore();
-  const [user, setUser] = useState<FirebaseUser | null>(auth.currentUser);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!auth) {
+      setLoading(true);
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, (userState) => {
       setUser(userState);
       setLoading(false);
@@ -45,15 +49,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [auth]);
 
   const login = async (email: string, pass: string) => {
+    if (!auth) throw new Error('Servicio de autenticación no disponible.');
     const userCredential = await signInWithEmailAndPassword(auth, email, pass);
     return userCredential.user;
   };
 
   const logout = async () => {
+    if (!auth) throw new Error('Servicio de autenticación no disponible.');
     await firebaseSignOut(auth);
   };
 
   const loginWithGoogle = async () => {
+    if (!auth || !firestore) throw new Error('Servicio de Firebase no disponible.');
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
@@ -80,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (name: string, email: string, pass: string) => {
+    if (!auth || !firestore) throw new Error('Servicio de Firebase no disponible.');
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     const firebaseUser = userCredential.user;
 
@@ -101,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const sendPasswordReset = async (email: string) => {
+    if (!auth) throw new Error('Servicio de autenticación no disponible.');
     await sendPasswordResetEmail(auth, email);
   };
 

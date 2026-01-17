@@ -21,14 +21,22 @@ export function useDoc<T extends DocumentData>(
   const [error, setError] = useState<FirestoreError | null>(null);
 
   const docRef = useMemo(() => {
-    if (!docPath) return null;
+    // Return null if db or docPath is not available
+    if (!db || !docPath) return null;
     return doc(db, docPath);
   }, [db, docPath]);
 
   useEffect(() => {
     if (!docRef) {
+      // If we don't have a doc ref, we are either not ready (db missing)
+      // or there is no path. If there's a path but no db, we are loading.
+      // If there's no path, we are not loading.
+      if (docPath && !db) {
+        setLoading(true);
+      } else {
+        setLoading(false);
+      }
       setData(null);
-      setLoading(false);
       return;
     }
 
@@ -57,7 +65,7 @@ export function useDoc<T extends DocumentData>(
     );
 
     return () => unsubscribe();
-  }, [docRef]);
+  }, [docRef, db, docPath]); // Dependencies updated to correctly manage loading state
 
   return { data, loading, error };
 }

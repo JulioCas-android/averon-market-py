@@ -62,10 +62,8 @@ export function FirebaseClientProvider({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!firebaseServices) {
-    // Render nothing on the server or while waiting for client-side initialization.
-    return null;
-  }
-  
+  // On the server and during client-side hydration before useEffect runs, 
+  // `firebaseServices` is null. The provider passes this null value down.
+  // The hooks are designed to handle this gracefully.
   return <FirebaseProvider value={firebaseServices}>{children}</FirebaseProvider>;
 }

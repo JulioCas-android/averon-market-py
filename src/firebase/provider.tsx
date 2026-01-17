@@ -11,36 +11,37 @@ interface FirebaseContextValue {
   firestore: Firestore;
 }
 
-const FirebaseContext = createContext<FirebaseContextValue | undefined>(undefined);
+// The context can now hold `null` for server-side rendering.
+const FirebaseContext = createContext<FirebaseContextValue | null>(null);
 
 export function FirebaseProvider({
   children,
   value,
 }: {
   children: ReactNode;
-  value: FirebaseContextValue;
+  value: FirebaseContextValue | null; // Allow null value
 }) {
   return (
     <FirebaseContext.Provider value={value}>
       {children}
-      <FirebaseErrorListener />
+      {/* The listener should only be active when firebase is initialized on the client */}
+      {value && <FirebaseErrorListener />}
     </FirebaseContext.Provider>
   );
 }
 
+// Hooks are updated to be safe during SSR when the context value is `null`.
+// They will return `undefined` instead of throwing an error.
+
 export function useFirebase() {
-  const context = useContext(FirebaseContext);
-  if (context === undefined) {
-    throw new Error('useFirebase must be used within a FirebaseProvider');
-  }
-  return context;
+  return useContext(FirebaseContext);
 }
 export function useFirebaseApp() {
-  return useFirebase().firebaseApp;
+  return useFirebase()?.firebaseApp;
 }
 export function useFirestore() {
-  return useFirebase().firestore;
+  return useFirebase()?.firestore;
 }
 export function useAuth() {
-  return useFirebase().auth;
+  return useFirebase()?.auth;
 }
