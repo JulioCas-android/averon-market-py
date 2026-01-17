@@ -96,18 +96,18 @@ export default function Home() {
       
       <section className="container mx-auto pb-12 px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div className="flex flex-col items-center">
-                <PackageCheck className="w-12 h-12 text-primary mb-4" />
+            <div className="flex flex-col items-center group">
+                <PackageCheck className="w-12 h-12 text-primary mb-4 transition-transform duration-300 group-hover:scale-110" />
                 <h3 className="text-xl font-semibold mb-2">Calidad Garantizada</h3>
                 <p className="text-muted-foreground">Productos seleccionados para asegurar tu satisfacción.</p>
             </div>
-            <div className="flex flex-col items-center">
-                <Truck className="w-12 h-12 text-primary mb-4" />
+            <div className="flex flex-col items-center group">
+                <Truck className="w-12 h-12 text-primary mb-4 transition-transform duration-300 group-hover:scale-110" />
                 <h3 className="text-xl font-semibold mb-2">Envío Rápido</h3>
                 <p className="text-muted-foreground">Recibe tus compras en la puerta de tu casa.</p>
             </div>
-            <div className="flex flex-col items-center">
-                <ShieldCheck className="w-12 h-12 text-primary mb-4" />
+            <div className="flex flex-col items-center group">
+                <ShieldCheck className="w-12 h-12 text-primary mb-4 transition-transform duration-300 group-hover:scale-110" />
                 <h3 className="text-xl font-semibold mb-2">Pago Seguro</h3>
                 <p className="text-muted-foreground">Tus transacciones están protegidas con nosotros.</p>
             </div>
