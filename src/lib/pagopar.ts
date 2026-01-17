@@ -74,7 +74,7 @@ export async function createPaymentOrder(order: Order, orderId: string): Promise
     fecha_maxima_pago: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' '), // 24 hours to pay
     id_pedido_comercio: orderId,
     descripcion_resumen: `Pedido #${orderId.substring(0, 7)}`,
-    url_retorno: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002'}/order-confirmation?orderId=${orderId}`, // Client redirect URL
+    url_retorno: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002'}/pagopar-redirect?orderId=${orderId}`, // Client redirect URL
   };
 
   // 3. Send request to Pagopar

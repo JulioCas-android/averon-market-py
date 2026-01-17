@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect } from 'react';
@@ -23,7 +22,7 @@ export default function PagoparRedirectPage() {
     
     const timer = setTimeout(() => {
       // Redirigir a la página de confirmación final.
-      router.push(`/order-confirmation?method=ONLINE&orderId=${orderId}`);
+      router.push(`/order-confirmation?method=ONLINE&orderId=${orderId || ''}`);
     }, 2000); // 2 segundos de retraso para dar sensación de procesamiento
 
     return () => clearTimeout(timer);
