@@ -6,7 +6,7 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
-import { WhatsAppFAB } from '@/components/whatsapp-fab';
+import WhatsAppFAB from '@/components/whatsapp-fab';
 import { PWAProvider } from '@/components/pwa-provider';
 
 export const metadata: Metadata = {
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0B57D0',
+  themeColor: '#1F3A93',
   width: 'device-width',
   initialScale: 1,
 };
