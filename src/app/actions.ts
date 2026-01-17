@@ -5,6 +5,10 @@ import { sendPersonalizedOfferNotification, PersonalizedOfferNotificationInput }
 import { generateImage, GenerateImageInput } from '@/ai/flows/generate-image-flow';
 import { generateProductDescription, GenerateProductDescriptionInput } from '@/ai/flows/generate-product-description-flow';
 import { suggestProductCategory, SuggestProductCategoryInput } from '@/ai/flows/suggest-product-category-flow';
+import { createPaymentOrder } from '@/lib/pagopar';
+import type { Order } from '@/lib/types';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { firestore } from '@/firebase/server';
 
 export async function sendPersonalizedOfferNotificationAction() {
     // In a real application, you would fetch this data for the logged-in user.
@@ -72,5 +76,35 @@ export async function suggestProductCategoryAction(productName: string) {
         console.error('Error suggesting product category:', error);
         const errorMessage = error.message || 'Ocurrió un error desconocido.';
         return { success: false, message: `No se pudo sugerir una categoría: ${errorMessage}` };
+    }
+}
+
+export async function createPagoparPaymentAction(orderId: string) {
+    try {
+        const orderDocRef = doc(firestore, 'orders', orderId);
+        const orderSnap = await getDoc(orderDocRef);
+
+        if (!orderSnap.exists()) {
+            throw new Error('El pedido no existe.');
+        }
+
+        const orderData = orderSnap.data() as Order;
+
+        const pagoparResponse = await createPaymentOrder(orderData, orderId);
+
+        if (pagoparResponse.respuesta === false) {
+             throw new Error(pagoparResponse.resultado?.[0]?.descripcion || 'Error desconocido de Pagopar.');
+        }
+
+        const transactionId = pagoparResponse.resultado[0].id_transaccion;
+        const paymentUrl = pagoparResponse.resultado[0].url;
+
+        // Save the transaction ID to the order
+        await updateDoc(orderDocRef, { pagoparTransactionId: transactionId });
+
+        return { success: true, paymentUrl };
+    } catch (error: any) {
+        console.error('Error creating Pagopar payment:', error);
+        return { success: false, message: error.message };
     }
 }

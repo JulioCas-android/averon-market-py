@@ -1,3 +1,4 @@
+
 export interface Product {
   id: string;
   name: string;
@@ -41,4 +42,5 @@ export interface Order {
   thirdPartyReceiver: boolean;
   thirdPartyName?: string;
   thirdPartyId?: string;
+  pagoparTransactionId?: string;
 }

@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -89,6 +90,10 @@
         "thirdPartyId": {
           "type": "string",
           "description": "The ID number of the third-party receiver."
+        },
+        "pagoparTransactionId": {
+          "type": "string",
+          "description": "The transaction ID from the Pagopar payment gateway."
         }
       },
       "required": ["customerRazonSocial", "customerRuc", "customerEmail", "shippingAddress", "items", "total", "status", "createdAt", "paymentMethod", "thirdPartyReceiver"]
