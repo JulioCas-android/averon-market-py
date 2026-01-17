@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/hooks/use-auth';
 import { CartProvider } from '@/hooks/use-cart';
@@ -12,12 +12,15 @@ import { PWAProvider } from '@/components/pwa-provider';
 export const metadata: Metadata = {
   title: 'AVERON Market PY',
   description: 'Tecnología y comodidad en un solo lugar.',
-  themeColor: '#0B57D0',
   icons: {
     icon: 'https://i.imgur.com/UpxHMxI.png',
     apple: 'https://i.imgur.com/UpxHMxI.png',
   },
   manifest: '/manifest.json',
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0B57D0',
 };
 
 export default function RootLayout({
