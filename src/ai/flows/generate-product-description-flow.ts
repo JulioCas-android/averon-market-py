@@ -37,13 +37,18 @@ const productDescriptionPrompt = ai.definePrompt({
 
   Genera una descripción que cumpla con los siguientes requisitos:
   1.  **Descripción Breve:** Un párrafo introductorio corto y atractivo (máximo 2 frases) que destaque el principal beneficio del producto.
-  2.  **Especificaciones Técnicas:** Una lista de 3 a 5 especificaciones clave. Cada especificación debe tener el siguiente formato exacto:
+  2.  **Especificaciones Técnicas:** Una lista de 3 a 5 especificaciones clave.
+      - Si el producto es un dispositivo electrónico (como un smartphone o smartwatch), **investiga y menciona si tiene funciones especiales como NFC**, carga inalámbrica, o resistencia al agua.
+      - Cada especificación debe tener el siguiente formato exacto:
       TITULO DE LA ESPECIFICACION
       Descripción de la especificación en una línea.
 
       Ejemplo:
       PROCESADOR
       Chip A17 Pro con Neural Engine de 16 núcleos.
+
+      CONECTIVIDAD
+      NFC para pagos sin contacto y emparejamiento rápido.
 
       PANTALLA
       Super Retina XDR de 6.1 pulgadas con ProMotion.
