@@ -52,5 +52,11 @@ service cloud.firestore {
       allow update: if isAdmin();
       allow delete: if false; // Por seguridad, no se permite eliminar pedidos.
     }
+
+    // Ventas (POS):
+    // - Solo los administradores pueden leer y escribir en la colección de ventas.
+    match /sales/{saleId} {
+      allow read, write: if isAdmin();
+    }
   }
 }
