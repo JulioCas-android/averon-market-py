@@ -149,7 +149,14 @@ export default function ProductDetailPage() {
           <Separator />
           
           <div className='space-y-4'>
-            <p className="text-4xl font-bold text-primary">Gs. {product.price.toLocaleString('es-PY')}</p>
+            {product.onSale && product.salePrice ? (
+              <div className="flex items-baseline gap-2">
+                  <p className="text-4xl font-bold text-primary">Gs. {product.salePrice.toLocaleString('es-PY')}</p>
+                  <p className="text-xl text-muted-foreground line-through">Gs. {product.price.toLocaleString('es-PY')}</p>
+              </div>
+            ) : (
+                <p className="text-4xl font-bold text-primary">Gs. {product.price.toLocaleString('es-PY')}</p>
+            )}
             <Badge variant={isInStock ? 'default' : 'destructive'} className={isInStock ? 'bg-green-600 hover:bg-green-700' : ''}>
               {isInStock ? 'En Stock' : 'Agotado'}
             </Badge>

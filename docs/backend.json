@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "UserProfile": {
@@ -30,11 +29,13 @@
       "properties": {
         "name": { "type": "string" },
         "description": { "type": "string" },
-        "price": { "type": "number" },
+        "price": { "type": "number", "description": "The regular selling price of the product." },
+        "salePrice": { "type": "number", "description": "The discounted price when the product is on sale." },
         "image": { "type": "string" },
         "imageHint": { "type": "string" },
         "category": { "type": "string" },
         "onSale": { "type": "boolean" },
+        "featured": { "type": "boolean", "description": "Indicates if the product should be featured on the homepage." },
         "stock": { "type": "number", "description": "Quantity of the product in stock." },
         "condition": { "type": "string", "enum": ["Nuevo", "Usado", "Reacondicionado"], "description": "The condition of the product." },
         "color": { "type": "string", "description": "The color of the product." }
@@ -97,6 +98,29 @@
         }
       },
       "required": ["customerRazonSocial", "customerRuc", "customerEmail", "shippingAddress", "items", "total", "status", "createdAt", "paymentMethod", "thirdPartyReceiver"]
+    },
+    "Sale": {
+      "title": "Direct Sale",
+      "description": "Represents a direct sale made through the admin panel (POS).",
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "productId": { "type": "string" },
+              "name": { "type": "string" },
+              "quantity": { "type": "number" },
+              "price": { "type": "number" }
+            },
+            "required": ["productId", "name", "quantity", "price"]
+          }
+        },
+        "total": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["items", "total", "createdAt"]
     }
   },
   "auth": {
@@ -114,6 +138,10 @@
     "/orders/{orderId}": {
       "schema": { "$ref": "#/backend/entities/Order" },
       "description": "Stores all customer orders."
+    },
+    "/sales/{saleId}": {
+      "schema": { "$ref": "#/backend/entities/Sale" },
+      "description": "Stores direct sales records from the admin POS."
     }
   }
 }

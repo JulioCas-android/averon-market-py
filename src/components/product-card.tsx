@@ -59,7 +59,14 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
                 </div>
                 <div className="flex-grow">
                     <p className="text-sm font-semibold leading-tight group-hover:text-primary transition-colors">{product.name}</p>
-                    <p className="text-base font-bold text-primary mt-1">Gs. {product.price.toLocaleString('es-PY')}</p>
+                    {product.onSale && product.salePrice ? (
+                      <div className="flex items-baseline gap-2">
+                          <p className="text-base font-bold text-primary mt-1">Gs. {product.salePrice.toLocaleString('es-PY')}</p>
+                          <p className="text-sm text-muted-foreground line-through">Gs. {product.price.toLocaleString('es-PY')}</p>
+                      </div>
+                    ) : (
+                      <p className="text-base font-bold text-primary mt-1">Gs. {product.price.toLocaleString('es-PY')}</p>
+                    )}
                 </div>
             </Card>
         </Link>
@@ -99,8 +106,16 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
                 </div>
                 {reviewCount > 0 && <span className="text-muted-foreground/80">({reviewCount})</span>}
             </div>
+            
+            {product.onSale && product.salePrice ? (
+              <div className="flex items-baseline gap-2">
+                  <p className="text-2xl font-bold text-primary">Gs. {product.salePrice.toLocaleString('es-PY')}</p>
+                  <p className="text-sm text-muted-foreground line-through">Gs. {product.price.toLocaleString('es-PY')}</p>
+              </div>
+            ) : (
+              <p className="text-2xl font-bold text-primary">Gs. {product.price.toLocaleString('es-PY')}</p>
+            )}
 
-            <p className="text-2xl font-bold text-primary">Gs. {product.price.toLocaleString('es-PY')}</p>
         </CardContent>
         <CardFooter className="p-4 pt-0 flex flex-col gap-2">
             <Button 

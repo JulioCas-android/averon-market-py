@@ -4,10 +4,12 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  salePrice?: number;
   image: string;
   imageHint?: string;
   category: string;
   onSale?: boolean;
+  featured?: boolean;
   stock: number;
   condition: 'Nuevo' | 'Usado' | 'Reacondicionado';
   color?: string;
@@ -43,4 +45,16 @@ export interface Order {
   thirdPartyName?: string;
   thirdPartyId?: string;
   pagoparTransactionId?: string;
+}
+
+export interface Sale {
+    id: string;
+    items: {
+        productId: string;
+        name: string;
+        quantity: number;
+        price: number;
+    }[];
+    total: number;
+    createdAt: string;
 }
