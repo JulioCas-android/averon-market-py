@@ -68,10 +68,12 @@ export function ProductForm({ initialData, allProducts, onSubmit, isSubmitting }
     },
   });
 
-  const { fields: imageFields, append: appendImage, remove: removeImage } = useFieldArray({
+  const { append: appendImage, remove: removeImage } = useFieldArray({
     control: form.control,
     name: 'images'
   });
+  
+  const images = form.watch('images');
 
   const categories = useMemo(() => {
     if (!allProducts) return [];
@@ -193,33 +195,33 @@ export function ProductForm({ initialData, allProducts, onSubmit, isSubmitting }
                 <Input ref={fileInputRef} type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleFileSelect} />
               </div>
 
-              <div className="space-y-4">
-                {imageFields.map((field, index) => (
-                    <FormField
-                        key={field.id}
-                        control={form.control}
-                        name={`images.${index}`}
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Imagen {index + 1}</FormLabel>
-                                <div className="flex items-center gap-2">
-                                    <FormControl>
-                                        <Input placeholder="URL o Data URI de la imagen" {...field} />
-                                    </FormControl>
-                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeImage(index)}>
-                                        <Trash2 className="h-4 w-4 text-destructive" />
-                                    </Button>
-                                </div>
-                                <FormMessage />
-                            </FormItem>
-                        )}
+              {form.formState.errors.images && (
+                <p className="text-sm font-medium text-destructive">
+                    {form.formState.errors.images.message || (form.formState.errors.images.root && form.formState.errors.images.root.message)}
+                </p>
+              )}
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {images?.map((imageUrl, index) => (
+                  <div key={index} className="relative aspect-square group">
+                    <Image
+                      src={imageUrl}
+                      alt={`Previsualización del producto ${index + 1}`}
+                      fill
+                      className="object-cover rounded-md border"
                     />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                      onClick={() => removeImage(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Eliminar imagen</span>
+                    </Button>
+                  </div>
                 ))}
-                {form.formState.errors.images && (
-                    <p className="text-sm font-medium text-destructive">
-                        {form.formState.errors.images.message || (form.formState.errors.images.root && form.formState.errors.images.root.message)}
-                    </p>
-                )}
               </div>
             </CardContent>
           </Card>
