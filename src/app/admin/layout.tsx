@@ -22,7 +22,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 
-const AdminNav = () => {
+const AdminNav = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const router = useRouter();
@@ -104,7 +104,7 @@ const AdminNav = () => {
           </div>
           <SidebarTrigger />
         </header>
-        <div className="flex-1">{React.Children.toArray(arguments[0].children)}</div>
+        <div className="flex-1">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );
