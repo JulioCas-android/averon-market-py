@@ -214,7 +214,7 @@ export function ProductForm({ initialData, allProducts, onSubmit, isSubmitting }
                       type="button"
                       variant="destructive"
                       size="icon"
-                      className="absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                      className="absolute top-1 right-1 h-7 w-7 z-10"
                       onClick={() => removeImage(index)}
                     >
                       <Trash2 className="h-4 w-4" />
