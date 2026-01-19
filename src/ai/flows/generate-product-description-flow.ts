@@ -31,16 +31,24 @@ const productDescriptionPrompt = ai.definePrompt({
   name: 'productDescriptionPrompt',
   input: {schema: GenerateProductDescriptionInputSchema},
   output: {schema: GenerateProductDescriptionOutputSchema},
-  prompt: `Eres un experto en marketing y redacción para e-commerce. Tu tarea es crear una descripción de producto atractiva y detallada en español para la tienda online "AVERON Market PY".
+  prompt: `Eres un experto en redacción para e-commerce. Tu tarea es crear una descripción para "AVERON Market PY".
 
   Producto: {{{productName}}}
 
-  Genera una descripción que sea:
-  1.  Vendedora y Atractiva: Usa un lenguaje que incite a la compra y destaque los beneficios.
-  2.  Informativa: Incluye características clave y especificaciones técnicas relevantes para el producto. Si no conoces el producto, inventa características plausibles y deseables basadas en su nombre.
-  3.  Bien Estructurada: Organiza la información de forma clara, con un párrafo introductorio y luego una lista de puntos o características.
-  
-  Importante: El resultado debe ser un único bloque de texto plano. No utilices ningún tipo de formato Markdown (como asteriscos para **negrita** o guiones para listas). Estructura los puntos usando saltos de línea.
+  Genera una descripción que cumpla con los siguientes requisitos:
+  1.  **Descripción Breve:** Un párrafo introductorio corto y atractivo (máximo 2 frases) que destaque el principal beneficio del producto.
+  2.  **Especificaciones Técnicas:** Una lista de 3 a 5 especificaciones clave. Cada especificación debe tener el siguiente formato exacto:
+      TITULO DE LA ESPECIFICACION
+      Descripción de la especificación en una línea.
+
+      Ejemplo:
+      PROCESADOR
+      Chip A17 Pro con Neural Engine de 16 núcleos.
+
+      PANTALLA
+      Super Retina XDR de 6.1 pulgadas con ProMotion.
+
+  Importante: El resultado debe ser un único bloque de texto plano. No utilices ningún tipo de formato Markdown (como asteriscos o guiones). Utiliza saltos de línea para separar los elementos.
   `,
 });
 

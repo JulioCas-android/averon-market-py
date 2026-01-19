@@ -182,7 +182,9 @@ export default function OrdersPage() {
                   {viewingOrder.items.map(item => (
                     <div key={item.product.id} className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <Image src={item.product.image} alt={item.product.name} width={48} height={48} className="rounded-md object-cover" />
+                        {item.product.images && item.product.images.length > 0 && (
+                          <Image src={item.product.images[0]} alt={item.product.name} width={48} height={48} className="rounded-md object-cover" />
+                        )}
                         <div>
                           <p className="font-medium">{item.product.name}</p>
                           <p className="text-sm text-muted-foreground">Cantidad: {item.quantity}</p>

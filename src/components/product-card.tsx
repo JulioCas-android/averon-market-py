@@ -49,13 +49,15 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
         <Link href={`/product/${product.id}`} className="group block">
             <Card className="flex flex-row items-center gap-4 p-2 transition-all duration-300 hover:shadow-md hover:bg-muted/50">
                 <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md">
-                    <Image
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                    data-ai-hint={product.imageHint}
-                    />
+                    {product.images && product.images.length > 0 && (
+                      <Image
+                      src={product.images[0]}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                      data-ai-hint={product.imageHint}
+                      />
+                    )}
                 </div>
                 <div className="flex-grow">
                     <p className="text-sm font-semibold leading-tight group-hover:text-primary transition-colors">{product.name}</p>
@@ -78,13 +80,15 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
       <Card className="h-full flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
         <CardHeader className="p-0 relative">
           <div className="aspect-square w-full relative">
-            <Image
-              src={product.image}
-              alt={product.name}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-              data-ai-hint={product.imageHint}
-            />
+            {product.images && product.images.length > 0 && (
+              <Image
+                src={product.images[0]}
+                alt={product.name}
+                fill
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                data-ai-hint={product.imageHint}
+              />
+            )}
              {product.onSale && (
               <Badge variant="secondary" className="absolute top-3 right-3">OFERTA</Badge>
             )}

@@ -57,6 +57,7 @@ export default function ProductDetailPage() {
   const { data: allProducts, loading: relatedLoading } = useCollection<Product>(productsQuery);
 
   const [quantity, setQuantity] = useState(1);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [soldCount, setSoldCount] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
 
@@ -65,6 +66,12 @@ export default function ProductDetailPage() {
     setSoldCount(Math.floor(Math.random() * 50) + 1);
     setReviewCount(Math.floor(Math.random() * 200) + 10);
   }, [id]);
+
+  useEffect(() => {
+    if (product && product.images && product.images.length > 0) {
+      setSelectedImage(product.images[0]);
+    }
+  }, [product]);
 
   const relatedProducts = useMemo(() => {
     if (!product || !allProducts) return [];
@@ -115,18 +122,42 @@ export default function ProductDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 xl:gap-12">
         {/* Image Column */}
         <div className="lg:col-span-3">
-          <div className="sticky top-24 bg-card p-4 rounded-lg shadow-sm aspect-square flex items-center justify-center border">
-            <Image
-              src={product.image}
-              alt={product.name}
-              width={600}
-              height={600}
-              className="rounded-lg object-contain max-h-[550px]"
-              data-ai-hint={product.imageHint}
-              priority
-            />
+          <div className="sticky top-24">
+            <div className="bg-card p-4 rounded-lg shadow-sm aspect-square flex items-center justify-center border">
+              {selectedImage && (
+                <Image
+                  src={selectedImage}
+                  alt={product.name}
+                  width={600}
+                  height={600}
+                  className="rounded-lg object-contain max-h-[550px]"
+                  data-ai-hint={product.imageHint}
+                  priority
+                />
+              )}
+            </div>
+            {product.images && product.images.length > 1 && (
+              <div className="flex justify-center gap-2 mt-4">
+                {product.images.map((img, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImage(img)}
+                    className={`rounded-lg border-2 p-1 ${selectedImage === img ? 'border-primary' : 'border-border'}`}
+                  >
+                    <Image
+                      src={img}
+                      alt={`${product.name} thumbnail ${index + 1}`}
+                      width={64}
+                      height={64}
+                      className="rounded-md object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
+
 
         {/* Info & Actions Column */}
         <div className="lg:col-span-2 space-y-6">

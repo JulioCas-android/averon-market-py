@@ -42,7 +42,7 @@ export async function createPaymentOrder(order: Order, orderId: string): Promise
     cantidad: item.quantity,
     categoria: '909', // Generic category ID from Pagopar docs
     public_key: PAGOPAR_PUBLIC_KEY,
-    url_imagen: item.product.image,
+    url_imagen: item.product.images && item.product.images.length > 0 ? item.product.images[0] : '',
     descripcion: item.product.description.substring(0, 100), // Description has a limit
     id_producto: item.product.id,
     precio_total: item.product.price * item.quantity,

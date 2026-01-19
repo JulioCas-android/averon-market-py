@@ -107,7 +107,9 @@ export default function OrderDetailPage() {
                 {order.items.map(item => (
                   <TableRow key={item.product.id}>
                     <TableCell className="hidden sm:table-cell">
-                      <Image src={item.product.image} alt={item.product.name} width={64} height={64} className="rounded-md object-cover" />
+                      {item.product.images && item.product.images.length > 0 && (
+                        <Image src={item.product.images[0]} alt={item.product.name} width={64} height={64} className="rounded-md object-cover" />
+                      )}
                     </TableCell>
                     <TableCell className="font-medium">{item.product.name}</TableCell>
                     <TableCell className="text-center">{item.quantity}</TableCell>

@@ -31,7 +31,7 @@
         "description": { "type": "string" },
         "price": { "type": "number", "description": "The regular selling price of the product." },
         "salePrice": { "type": "number", "description": "The discounted price when the product is on sale." },
-        "image": { "type": "string" },
+        "images": { "type": "array", "items": { "type": "string" }, "description": "A list of URLs for the product images. The first image is the main one." },
         "imageHint": { "type": "string" },
         "category": { "type": "string" },
         "onSale": { "type": "boolean" },
@@ -40,7 +40,7 @@
         "condition": { "type": "string", "enum": ["Nuevo", "Usado", "Reacondicionado"], "description": "The condition of the product." },
         "color": { "type": "string", "description": "The color of the product." }
       },
-      "required": ["name", "price", "category", "image", "stock", "condition"]
+      "required": ["name", "price", "category", "images", "stock", "condition"]
     },
     "Order": {
       "title": "Order",

@@ -41,12 +41,14 @@ export function CartSheet({ open, onOpenChange }: { open: boolean, onOpenChange:
                   <div key={item.product.id} className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-4">
                       <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md">
-                        <Image
-                          src={item.product.image}
-                          alt={item.product.name}
-                          fill
-                          className="object-cover"
-                        />
+                        {item.product.images && item.product.images.length > 0 && (
+                          <Image
+                            src={item.product.images[0]}
+                            alt={item.product.name}
+                            fill
+                            className="object-cover"
+                          />
+                        )}
                       </div>
                       <div>
                         <p className="font-semibold">{item.product.name}</p>

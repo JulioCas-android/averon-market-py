@@ -1,6 +1,6 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { Product } from '@/lib/types';
@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Upload, FileCheck2 } from 'lucide-react';
+import { Loader2, Sparkles, Upload, FileCheck2, Trash2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { useState, useRef, useMemo } from 'react';
 import Image from 'next/image';
@@ -26,7 +26,7 @@ export const productFormSchema = z.object({
   category: z.string().trim().min(2, 'La categoría es requerida'),
   condition: z.enum(['Nuevo', 'Usado', 'Reacondicionado']),
   color: z.string().trim().optional(),
-  image: z.string().trim().min(10, 'La URL o Data URI de la imagen es requerida.'),
+  images: z.array(z.string().trim().min(10, 'La URL o Data URI de la imagen es requerida.')).min(1, 'Se requiere al menos una imagen.'),
   imageHint: z.string().trim().max(40, "La pista para la IA no debe exceder los 40 caracteres").optional(),
   onSale: z.boolean().default(false),
   featured: z.boolean().default(false),
@@ -51,6 +51,7 @@ export function ProductForm({ initialData, allProducts, onSubmit, isSubmitting }
     defaultValues: initialData ? {
       ...initialData,
       salePrice: initialData.salePrice ?? undefined,
+      images: initialData.images || [],
     } : {
       name: '',
       description: '',
@@ -60,11 +61,16 @@ export function ProductForm({ initialData, allProducts, onSubmit, isSubmitting }
       category: '',
       condition: 'Nuevo',
       color: '',
-      image: '',
+      images: [],
       imageHint: '',
       onSale: false,
       featured: false,
     },
+  });
+
+  const { fields: imageFields, append: appendImage, remove: removeImage } = useFieldArray({
+    control: form.control,
+    name: 'images'
   });
 
   const categories = useMemo(() => {
@@ -96,7 +102,7 @@ export function ProductForm({ initialData, allProducts, onSubmit, isSubmitting }
     const result = await generateProductImageAction(imageHint);
     setIsGeneratingImage(false);
     if (result.success && result.imageUrl) {
-        form.setValue('image', result.imageUrl, { shouldValidate: true });
+        appendImage(result.imageUrl);
         toast({ title: 'Imagen Generada', description: 'La imagen ha sido generada y añadida.' });
     } else {
         toast({ variant: 'destructive', title: 'Error de Generación', description: result.message || 'Ocurrió un error inesperado.' });
@@ -112,7 +118,7 @@ export function ProductForm({ initialData, allProducts, onSubmit, isSubmitting }
       }
       const reader = new FileReader();
       reader.onloadend = () => {
-        form.setValue('image', reader.result as string, { shouldValidate: true });
+        appendImage(reader.result as string);
         toast({ title: 'Imagen Cargada', description: 'La imagen ha sido añadida.' });
       };
       reader.readAsDataURL(file);
@@ -135,8 +141,6 @@ export function ProductForm({ initialData, allProducts, onSubmit, isSubmitting }
         toast({ variant: 'destructive', title: 'Error de Generación', description: result.message || 'Ocurrió un error inesperado.' });
     }
   };
-
-  const imageUrl = form.watch('image');
 
   return (
     <Form {...form}>
@@ -173,7 +177,7 @@ export function ProductForm({ initialData, allProducts, onSubmit, isSubmitting }
           <Card>
             <CardHeader>
               <CardTitle>Imágenes</CardTitle>
-              <CardDescription>Añade una imagen para tu producto.</CardDescription>
+              <CardDescription>Añade una o varias imágenes para tu producto.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField control={form.control} name="imageHint" render={({ field }) => (
@@ -188,14 +192,35 @@ export function ProductForm({ initialData, allProducts, onSubmit, isSubmitting }
                 <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isSubmitting || isGeneratingImage}><Upload className="mr-2 h-4 w-4" /> Subir archivo</Button>
                 <Input ref={fileInputRef} type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleFileSelect} />
               </div>
-              {imageUrl && <div className="border rounded-md p-2 bg-background max-w-[150px]"><Image src={imageUrl} alt="Vista previa" width={150} height={150} className="rounded-md object-contain mx-auto aspect-square" /></div>}
-              <FormField control={form.control} name="image" render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium">URL o Data URI</FormLabel>
-                  <FormControl><Textarea placeholder="Genera, sube o pega una URL aquí." className="min-h-[80px]" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
+
+              <div className="space-y-4">
+                {imageFields.map((field, index) => (
+                    <FormField
+                        key={field.id}
+                        control={form.control}
+                        name={`images.${index}`}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Imagen {index + 1}</FormLabel>
+                                <div className="flex items-center gap-2">
+                                    <FormControl>
+                                        <Input placeholder="URL o Data URI de la imagen" {...field} />
+                                    </FormControl>
+                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeImage(index)}>
+                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                </div>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                ))}
+                {form.formState.errors.images && (
+                    <p className="text-sm font-medium text-destructive">
+                        {form.formState.errors.images.message || (form.formState.errors.images.root && form.formState.errors.images.root.message)}
+                    </p>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>

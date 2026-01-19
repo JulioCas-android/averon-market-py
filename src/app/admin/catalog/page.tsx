@@ -154,13 +154,17 @@ export default function CatalogPage() {
                   products.map((product) => (
                     <TableRow key={product.id}>
                       <TableCell className="hidden sm:table-cell">
-                        <Image
-                          alt={product.name}
-                          className="aspect-square rounded-md object-cover"
-                          height="64"
-                          src={product.image}
-                          width="64"
-                        />
+                        {product.images && product.images.length > 0 ? (
+                          <Image
+                            alt={product.name}
+                            className="aspect-square rounded-md object-cover"
+                            height="64"
+                            src={product.images[0]}
+                            width="64"
+                          />
+                        ) : (
+                          <div className="aspect-square w-16 h-16 bg-muted rounded-md flex items-center justify-center text-xs text-muted-foreground">Sin img.</div>
+                        )}
                       </TableCell>
                       <TableCell className="font-medium">{product.name}</TableCell>
                       <TableCell>
