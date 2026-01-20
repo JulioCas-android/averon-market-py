@@ -61,8 +61,8 @@ export function Footer() {
             <h4 className="font-semibold text-foreground mb-4">Suscríbete</h4>
             <p className="text-sm mb-2">Recibe ofertas especiales y noticias.</p>
             <div className="flex w-full max-w-sm items-center space-x-2">
-              <Input type="email" placeholder="Email" />
-              <Button type="submit" variant="secondary">OK</Button>
+              <Input type="email" placeholder="Correo electrónico" />
+              <Button type="submit" variant="secondary">Suscribir</Button>
             </div>
           </div>
         </div>
