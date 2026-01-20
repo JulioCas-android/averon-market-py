@@ -3,23 +3,29 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
-# 1. Get the Project ID from the gcloud config.
+# --- Configuración ---
+# Nombre para tu backend en App Hosting.
+BACKEND_ID="averon-market"
+# --------------------
+
 PROJECT_ID=$(gcloud config get-value project)
 echo "Deploying to Firebase Project: $PROJECT_ID"
+echo "Using App Hosting Backend ID: $BACKEND_ID"
 
-# 2. Build the Next.js application for production.
+# 1. Build the Next.js application for production.
 echo "Building the application..."
 npm run build
 
-# 3. Create the App Hosting backend if it doesn't exist.
-# The command will fail gracefully if the backend already exists.
-echo "Ensuring App Hosting backend exists..."
-firebase apphosting:backends:create --project=$PROJECT_ID || echo "Backend already exists or there was an issue creating it. Continuing..."
+# 2. Create the App Hosting backend if it doesn't exist.
+# The command will fail if the backend already exists, so we use `|| true` to continue.
+echo "Ensuring App Hosting backend '$BACKEND_ID' exists..."
+firebase apphosting:backends:create "$BACKEND_ID" --project="$PROJECT_ID" || true
 
 
-# 4. Deploy the application to Firebase App Hosting.
+# 3. Deploy the application to the specified backend in Firebase App Hosting.
 echo "Deploying to Firebase App Hosting..."
-firebase deploy --only apphosting --project=$PROJECT_ID
+# By specifying the backend, we avoid the interactive GitHub loop.
+firebase deploy --only "apphosting:$BACKEND_ID" --project="$PROJECT_ID"
 
 echo "Deployment complete!"
 echo "You can view your deployed application soon."
