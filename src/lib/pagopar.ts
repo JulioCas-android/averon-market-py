@@ -27,7 +27,8 @@ type PagoparResponse = PagoparSuccessResponse | PagoparErrorResponse;
 
 export async function createPaymentOrder(order: Order, orderId: string): Promise<{ success: boolean; paymentUrl: string; hash?: string, message?: string }> {
   if (!PAGOPAR_PUBLIC_KEY || !PAGOPAR_PRIVATE_KEY) {
-    throw new Error('Las claves de API de Pagopar no están configuradas en el servidor.');
+    console.warn('Intento de crear un pago de Pagopar sin las claves configuradas en el servidor.');
+    return { success: false, paymentUrl: '', message: 'La pasarela de pago online no está configurada actualmente.' };
   }
 
   // 1. Generate the security hash with sha1

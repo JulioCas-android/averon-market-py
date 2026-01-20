@@ -12,14 +12,14 @@ vpc:
 # App Hosting backends can be configured to have environment variables.
 # https://firebase.google.com/docs/app-hosting/configure-env
 env:
-  - variable: PAGOPAR_PRIVATE_KEY
-    secret: PAGOPAR_PRIVATE_KEY
-  - variable: NEXT_PUBLIC_PAGOPAR_PUBLIC_KEY # Mantenido como secreto por consistencia
-    secret: NEXT_PUBLIC_PAGOPAR_PUBLIC_KEY
+  # Las siguientes claves de Pagopar han sido desactivadas temporalmente.
+  # Cuando obtengas tus claves, descomenta estas líneas, crea los secretos y vuelve a desplegar.
+  # - variable: PAGOPAR_PRIVATE_KEY
+  #   secret: PAGOPAR_PRIVATE_KEY
+  # - variable: NEXT_PUBLIC_PAGOPAR_PUBLIC_KEY
+  #   secret: NEXT_PUBLIC_PAGOPAR_PUBLIC_KEY
   - variable: GEMINI_API_KEY
     secret: GEMINI_API_KEY
-  - variable: FIREBASE_SERVICE_ACCOUNT_KEY
-    secret: FIREBASE_SERVICE_ACCOUNT_KEY
 ingress:
   # App Hosting backends can be configured to be public or private.
   # Public backends are served on a Firebase-managed domain and can be configured to be served on a custom domain.

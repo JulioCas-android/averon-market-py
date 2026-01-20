@@ -404,7 +404,8 @@ export default function CheckoutPage() {
                                   </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                  <SelectItem value="ONLINE">Pago Online (Tarjetas y QR)</SelectItem>
+                                  {/* La opción de Pago Online se activará cuando se configuren las claves de Pagopar. */}
+                                  {/* <SelectItem value="ONLINE">Pago Online (Tarjetas y QR)</SelectItem> */}
                                   <SelectItem value="TRNF">Transferencia Bancaria</SelectItem>
                                   <SelectItem value="EWALLET">Billetera Electrónica (Tigo, Personal, etc.)</SelectItem>
                                   <SelectItem value="COD">Efectivo - Contra Entrega</SelectItem>
