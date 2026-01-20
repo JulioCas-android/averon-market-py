@@ -58,5 +58,13 @@ service cloud.firestore {
     match /sales/{saleId} {
       allow read, write: if isAdmin();
     }
+
+    // Configuración de la aplicación
+    // - Cualquiera puede leer la configuración (necesario para el checkout).
+    // - Solo los administradores pueden escribir en la configuración.
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
   }
 }
