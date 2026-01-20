@@ -1,35 +1,53 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# Local Environment Variables
+# Exclude all .env files to keep secrets out of the repository
+.env*
+!/.env.example
+
+# Dependencies
 /node_modules
 /.pnp
 .pnp.js
+.pnp.cjs
 
-# testing
-/coverage
+# Vercel
+.vercel
 
-# next.js
+# Next.js
 /.next/
 /out/
+.next/cache
 
-# production
+# Build outputs
 /build
+/.output
 
-# misc
-.DS_Store
-*.pem
-
-# debug
+# Dumps
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+e2e/videos/
+e2e/screenshots/
 
-# local env files
-.env*.local
+# IDE files
+.idea
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.sublime-workspace
 
-# vercel
-.vercel
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# Genkit
+.genkit/
+
+# Firebase
+firebase-debug.log
+firestore-debug.log
