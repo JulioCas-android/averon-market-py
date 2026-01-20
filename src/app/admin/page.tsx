@@ -71,7 +71,7 @@ export default function AdminDashboardPage() {
   const loading = ordersLoading || salesLoading || productsLoading;
 
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Panel de Control</h2>
       </div>
@@ -117,47 +117,77 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-7">
+        <Card className="lg:col-span-4">
           <CardHeader>
             <CardTitle>Pedidos Recientes</CardTitle>
             <CardDescription>
               Se han registrado {orders?.length || 0} pedidos online en total.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-             <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Cliente</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                    <TableHead className="text-right">Fecha</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    <TableRow><TableCell colSpan={4} className="h-24 text-center">Cargando...</TableCell></TableRow>
-                  ) : recentOrders.length > 0 ? (
-                    recentOrders.map((order) => (
-                      <TableRow key={order.id}>
-                        <TableCell>
-                          <div className="font-medium">{order.customerRazonSocial}</div>
-                          <div className="hidden text-sm text-muted-foreground md:inline">{order.customerEmail}</div>
-                        </TableCell>
-                        <TableCell><Badge variant="outline">{order.status}</Badge></TableCell>
-                        <TableCell className="text-right">Gs. {order.total.toLocaleString('es-PY')}</TableCell>
-                        <TableCell className="text-right">{new Date(order.createdAt).toLocaleDateString('es-PY')}</TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow><TableCell colSpan={4} className="h-24 text-center">No hay pedidos recientes.</TableCell></TableRow>
-                  )}
-                </TableBody>
-              </Table>
+          <CardContent className="p-0 md:p-6">
+             {/* Mobile View */}
+            <div className="md:hidden">
+            {loading ? (
+                <div className="p-4 text-center">Cargando...</div>
+            ) : recentOrders.length > 0 ? (
+                <div className="divide-y divide-border">
+                {recentOrders.map((order) => (
+                    <div key={order.id} className="p-4">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <p className="font-semibold">{order.customerRazonSocial}</p>
+                                <p className="text-sm text-muted-foreground">{order.customerEmail}</p>
+                            </div>
+                            <p className="font-bold text-sm">Gs. {order.total.toLocaleString('es-PY')}</p>
+                        </div>
+                        <div className="flex justify-between items-center mt-2">
+                            <Badge variant="outline">{order.status}</Badge>
+                            <p className="text-xs text-muted-foreground">{new Date(order.createdAt).toLocaleDateString('es-PY')}</p>
+                        </div>
+                    </div>
+                ))}
+                </div>
+            ) : (
+                <p className="p-4 text-center h-24 flex items-center justify-center">No hay pedidos recientes.</p>
+            )}
+            </div>
+
+            {/* Desktop View */}
+            <div className="hidden md:block">
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead>Cliente</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead className="text-right">Total</TableHead>
+                        <TableHead className="text-right">Fecha</TableHead>
+                    </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                    {loading ? (
+                        <TableRow><TableCell colSpan={4} className="h-24 text-center">Cargando...</TableCell></TableRow>
+                    ) : recentOrders.length > 0 ? (
+                        recentOrders.map((order) => (
+                        <TableRow key={order.id}>
+                            <TableCell>
+                            <div className="font-medium">{order.customerRazonSocial}</div>
+                            <div className="hidden text-sm text-muted-foreground md:inline">{order.customerEmail}</div>
+                            </TableCell>
+                            <TableCell><Badge variant="outline">{order.status}</Badge></TableCell>
+                            <TableCell className="text-right">Gs. {order.total.toLocaleString('es-PY')}</TableCell>
+                            <TableCell className="text-right">{new Date(order.createdAt).toLocaleDateString('es-PY')}</TableCell>
+                        </TableRow>
+                        ))
+                    ) : (
+                        <TableRow><TableCell colSpan={4} className="h-24 text-center">No hay pedidos recientes.</TableCell></TableRow>
+                    )}
+                    </TableBody>
+                </Table>
+            </div>
           </CardContent>
         </Card>
-        <Card className="col-span-3">
+        <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Vista General de Ventas</CardTitle>
             <CardDescription>Resumen de ingresos de los últimos meses.</CardDescription>

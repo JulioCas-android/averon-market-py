@@ -104,64 +104,108 @@ export default function OrdersPage() {
         title="Gestión de Pedidos"
         description="Visualiza y gestiona los pedidos de tus clientes."
       />
-      <div className="p-8 pt-0">
+      <div className="p-0 md:p-8 md:pt-0">
         <Card>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Pedido ID</TableHead>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead className='w-[200px]'>Estado</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {ordersLoading ? (
-                  <TableRow><TableCell colSpan={5} className="text-center h-24">Cargando pedidos...</TableCell></TableRow>
-                ) : sortedOrders && sortedOrders.length > 0 ? (
-                  sortedOrders.map((order) => (
-                    <TableRow key={order.id} className="cursor-pointer" onClick={() => setViewingOrder(order)}>
-                      <TableCell className="font-medium font-mono text-xs">#{order.id.substring(0, 7)}...</TableCell>
-                      <TableCell>{order.customerRazonSocial}</TableCell>
-                      <TableCell>{new Date(order.createdAt).toLocaleDateString('es-PY')}</TableCell>
-                      <TableCell>Gs. {order.total.toLocaleString('es-PY')}</TableCell>
-                      <TableCell onClick={(e) => e.stopPropagation()}>
-                        <Select
-                          defaultValue={order.status}
-                          onValueChange={(newStatus) => handleUpdateStatus(order.id, newStatus as Order['status'])}
-                        >
-                          <SelectTrigger className="w-full h-9">
-                            <SelectValue placeholder="Cambiar estado" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {orderStatuses.map(status => (
-                              <SelectItem key={status} value={status}>{status}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow><TableCell colSpan={5} className="text-center h-24">No se han realizado pedidos todavía.</TableCell></TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
+           <CardContent className="p-0 md:p-6">
+                {/* Mobile View */}
+                <div className="md:hidden">
+                    {ordersLoading ? (
+                        <div className="p-4 text-center">Cargando pedidos...</div>
+                    ) : sortedOrders && sortedOrders.length > 0 ? (
+                        <div className="divide-y divide-border">
+                        {sortedOrders.map((order) => (
+                            <div key={order.id} className="p-4 space-y-2" onClick={() => setViewingOrder(order)}>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="font-semibold">{order.customerRazonSocial}</p>
+                                        <p className="font-mono text-xs text-muted-foreground">#{order.id.substring(0, 7)}</p>
+                                    </div>
+                                    <p className="font-bold text-sm">Gs. {order.total.toLocaleString('es-PY')}</p>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <p className="text-xs text-muted-foreground">{new Date(order.createdAt).toLocaleDateString('es-PY')}</p>
+                                    <div className="w-[150px]" onClick={(e) => e.stopPropagation()}>
+                                        <Select
+                                            defaultValue={order.status}
+                                            onValueChange={(newStatus) => handleUpdateStatus(order.id, newStatus as Order['status'])}
+                                            >
+                                            <SelectTrigger className="h-8 text-xs">
+                                                <SelectValue placeholder="Cambiar estado" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {orderStatuses.map(status => (
+                                                <SelectItem key={status} value={status}>{status}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                        </div>
+                    ) : (
+                        <p className="p-4 text-center">No se han realizado pedidos todavía.</p>
+                    )}
+                </div>
+
+                {/* Desktop View */}
+                <div className="hidden md:block">
+                    <Table>
+                    <TableHeader>
+                        <TableRow>
+                        <TableHead>Pedido ID</TableHead>
+                        <TableHead>Cliente</TableHead>
+                        <TableHead>Fecha</TableHead>
+                        <TableHead>Total</TableHead>
+                        <TableHead className='w-[200px]'>Estado</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {ordersLoading ? (
+                        <TableRow><TableCell colSpan={5} className="text-center h-24">Cargando pedidos...</TableCell></TableRow>
+                        ) : sortedOrders && sortedOrders.length > 0 ? (
+                        sortedOrders.map((order) => (
+                            <TableRow key={order.id} className="cursor-pointer" onClick={() => setViewingOrder(order)}>
+                            <TableCell className="font-medium font-mono text-xs">#{order.id.substring(0, 7)}...</TableCell>
+                            <TableCell>{order.customerRazonSocial}</TableCell>
+                            <TableCell>{new Date(order.createdAt).toLocaleDateString('es-PY')}</TableCell>
+                            <TableCell>Gs. {order.total.toLocaleString('es-PY')}</TableCell>
+                            <TableCell onClick={(e) => e.stopPropagation()}>
+                                <Select
+                                defaultValue={order.status}
+                                onValueChange={(newStatus) => handleUpdateStatus(order.id, newStatus as Order['status'])}
+                                >
+                                <SelectTrigger className="w-full h-9">
+                                    <SelectValue placeholder="Cambiar estado" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {orderStatuses.map(status => (
+                                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                                </Select>
+                            </TableCell>
+                            </TableRow>
+                        ))
+                        ) : (
+                        <TableRow><TableCell colSpan={5} className="text-center h-24">No se han realizado pedidos todavía.</TableCell></TableRow>
+                        )}
+                    </TableBody>
+                    </Table>
+                </div>
+           </CardContent>
         </Card>
       </div>
 
       <Dialog open={!!viewingOrder} onOpenChange={(isOpen) => !isOpen && setViewingOrder(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh]">
           <DialogHeader className="bg-slate-900 text-white -mx-6 -mt-6 px-6 py-4 rounded-t-lg">
             <DialogTitle>Detalle del Pedido</DialogTitle>
             <DialogDescription className="text-slate-400">Pedido #{viewingOrder?.id.substring(0,7)}</DialogDescription>
           </DialogHeader>
           {viewingOrder && (
-            <div id="print-area" className="space-y-6 pt-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
+            <div id="print-area" className="space-y-6 pt-4 overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <h3 className="font-bold mb-2">Cliente</h3>
                   <p>{viewingOrder.customerRazonSocial}</p>

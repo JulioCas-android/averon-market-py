@@ -138,14 +138,14 @@ export default function SalesPage() {
         title="Módulo de Ventas"
         description="Registra ventas directas y consulta el historial."
       />
-      <div className="p-8 pt-0 grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="p-4 md:p-8 pt-0 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
               <CardTitle>Registrar Venta</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                   <PopoverTrigger asChild>
                     <Button
@@ -181,55 +181,96 @@ export default function SalesPage() {
                     </Command>
                   </PopoverContent>
                 </Popover>
-                <Button onClick={handleAddProductToSale}><Plus className="mr-2 h-4 w-4"/> Agregar</Button>
+                <Button onClick={handleAddProductToSale} className="w-full sm:w-auto"><Plus className="mr-2 h-4 w-4"/> Agregar</Button>
               </div>
 
                 <div className='min-h-[200px] border rounded-md'>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Producto</TableHead>
-                                <TableHead>Cantidad</TableHead>
-                                <TableHead>Precio Unit.</TableHead>
-                                <TableHead>Subtotal</TableHead>
-                                <TableHead></TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {currentSaleItems.length > 0 ? (
-                                currentSaleItems.map(item => (
-                                    <TableRow key={item.productId}>
-                                        <TableCell>{item.name}</TableCell>
-                                        <TableCell>
-                                            <input 
-                                                type="number" 
-                                                value={item.quantity} 
-                                                onChange={(e) => handleUpdateQuantity(item.productId, parseInt(e.target.value))}
-                                                className="w-16 rounded-md border p-1 text-center bg-transparent"
-                                                min="1"
-                                                max={item.stock}
-                                            />
-                                        </TableCell>
-                                        <TableCell>Gs. {item.price.toLocaleString('es-PY')}</TableCell>
-                                        <TableCell>Gs. {(item.price * item.quantity).toLocaleString('es-PY')}</TableCell>
-                                        <TableCell>
-                                            <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(item.productId)}>
+                    {/* Mobile view */}
+                    <div className="md:hidden">
+                        {currentSaleItems.length > 0 ? (
+                            <div className="divide-y divide-border">
+                                {currentSaleItems.map(item => (
+                                    <div key={item.productId} className="p-4 space-y-2">
+                                        <div className="flex justify-between items-start">
+                                            <p className="font-semibold pr-2">{item.name}</p>
+                                            <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0 -mt-1 -mr-2" onClick={() => handleRemoveItem(item.productId)}>
                                                 <Trash2 className="h-4 w-4 text-destructive"/>
                                             </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-2">
+                                                <label className="text-sm">Cant:</label>
+                                                <input 
+                                                    type="number" 
+                                                    value={item.quantity} 
+                                                    onChange={(e) => handleUpdateQuantity(item.productId, parseInt(e.target.value))}
+                                                    className="w-16 rounded-md border p-1 text-center bg-transparent"
+                                                    min="1"
+                                                    max={item.stock}
+                                                />
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="font-semibold">Gs. {(item.price * item.quantity).toLocaleString('es-PY')}</p>
+                                                <p className="text-xs text-muted-foreground">c/u Gs. {item.price.toLocaleString('es-PY')}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="h-24 flex items-center justify-center text-center text-sm text-muted-foreground">
+                                Agrega productos para iniciar la venta.
+                            </div>
+                        )}
+                    </div>
+                    {/* Desktop view */}
+                    <div className="hidden md:block">
+                        <Table>
+                            <TableHeader>
                                 <TableRow>
-                                    <TableCell colSpan={5} className="h-24 text-center">Agrega productos para iniciar la venta.</TableCell>
+                                    <TableHead>Producto</TableHead>
+                                    <TableHead className="w-[100px]">Cantidad</TableHead>
+                                    <TableHead>Precio Unit.</TableHead>
+                                    <TableHead>Subtotal</TableHead>
+                                    <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {currentSaleItems.length > 0 ? (
+                                    currentSaleItems.map(item => (
+                                        <TableRow key={item.productId}>
+                                            <TableCell>{item.name}</TableCell>
+                                            <TableCell>
+                                                <input 
+                                                    type="number" 
+                                                    value={item.quantity} 
+                                                    onChange={(e) => handleUpdateQuantity(item.productId, parseInt(e.target.value))}
+                                                    className="w-16 rounded-md border p-1 text-center bg-transparent"
+                                                    min="1"
+                                                    max={item.stock}
+                                                />
+                                            </TableCell>
+                                            <TableCell>Gs. {item.price.toLocaleString('es-PY')}</TableCell>
+                                            <TableCell>Gs. {(item.price * item.quantity).toLocaleString('es-PY')}</TableCell>
+                                            <TableCell>
+                                                <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(item.productId)}>
+                                                    <Trash2 className="h-4 w-4 text-destructive"/>
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="h-24 text-center">Agrega productos para iniciar la venta.</TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </div>
-                <div className="flex justify-end items-center gap-4">
+                <div className="flex flex-col sm:flex-row justify-end items-center gap-4">
                     <span className="text-lg font-bold">Total: Gs. {currentSaleTotal.toLocaleString('es-PY')}</span>
-                    <Button onClick={handleRegisterSale} disabled={currentSaleItems.length === 0}>
+                    <Button onClick={handleRegisterSale} disabled={currentSaleItems.length === 0} className="w-full sm:w-auto">
                         Registrar Venta
                     </Button>
                 </div>
@@ -239,7 +280,7 @@ export default function SalesPage() {
         <div className="lg:col-span-1 space-y-4">
             <Card>
                 <CardHeader>
-                    <CardTitle>Ventas Totales</CardTitle>
+                    <CardTitle>Ventas Totales (POS)</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <p className="text-3xl font-bold">Gs. {totalVentas.toLocaleString('es-PY')}</p>
@@ -254,7 +295,7 @@ export default function SalesPage() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Fecha</TableHead>
-                                <TableHead>Total</TableHead>
+                                <TableHead className="text-right">Total</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -264,7 +305,7 @@ export default function SalesPage() {
                                 sales.slice(0, 5).map((sale) => (
                                 <TableRow key={sale.id}>
                                     <TableCell>{new Date(sale.createdAt).toLocaleDateString('es-PY')}</TableCell>
-                                    <TableCell>Gs. {sale.total.toLocaleString('es-PY')}</TableCell>
+                                    <TableCell className="text-right">Gs. {sale.total.toLocaleString('es-PY')}</TableCell>
                                 </TableRow>
                                 ))
                             ) : (
