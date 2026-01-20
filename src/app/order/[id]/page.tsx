@@ -104,18 +104,21 @@ export default function OrderDetailPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {order.items.map(item => (
-                  <TableRow key={item.product.id}>
-                    <TableCell className="hidden sm:table-cell">
-                      {item.product.images && item.product.images.length > 0 && (
-                        <Image src={item.product.images[0]} alt={item.product.name} width={64} height={64} className="rounded-md object-cover" />
-                      )}
-                    </TableCell>
-                    <TableCell className="font-medium">{item.product.name}</TableCell>
-                    <TableCell className="text-center">{item.quantity}</TableCell>
-                    <TableCell className="text-right">Gs. {(item.product.price * item.quantity).toLocaleString('es-PY')}</TableCell>
-                  </TableRow>
-                ))}
+                {order.items.map((item, index) => {
+                  if (!item.product) return null;
+                  return (
+                    <TableRow key={item.product.id || index}>
+                      <TableCell className="hidden sm:table-cell">
+                        {item.product.images && item.product.images.length > 0 && (
+                          <Image src={item.product.images[0]} alt={item.product.name} width={64} height={64} className="rounded-md object-cover" />
+                        )}
+                      </TableCell>
+                      <TableCell className="font-medium">{item.product.name}</TableCell>
+                      <TableCell className="text-center">{item.quantity}</TableCell>
+                      <TableCell className="text-right">Gs. {(item.product.price * item.quantity).toLocaleString('es-PY')}</TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
             <Separator className="my-4" />

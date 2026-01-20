@@ -6,6 +6,8 @@ set -e
 # --- Configuración ---
 # Nombre para tu backend en App Hosting.
 BACKEND_ID="averon-market"
+# Región para tu backend.
+LOCATION="us-central1"
 # --------------------
 
 PROJECT_ID=$(gcloud config get-value project)
@@ -18,8 +20,8 @@ npm run build
 
 # 2. Create the App Hosting backend if it doesn't exist.
 # The command will fail if the backend already exists, so we use `|| true` to continue.
-echo "Ensuring App Hosting backend '$BACKEND_ID' exists..."
-firebase apphosting:backends:create "$BACKEND_ID" --project="$PROJECT_ID" || true
+echo "Ensuring App Hosting backend '$BACKEND_ID' exists in '$LOCATION'..."
+firebase apphosting:backends:create "$BACKEND_ID" --project="$PROJECT_ID" --location="$LOCATION" || true
 
 
 # 3. Deploy the application to the specified backend in Firebase App Hosting.

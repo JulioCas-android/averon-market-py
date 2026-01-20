@@ -223,20 +223,23 @@ export default function OrdersPage() {
               <div>
                 <h3 className="font-bold mb-2">Productos</h3>
                 <div className="space-y-4">
-                  {viewingOrder.items.map(item => (
-                    <div key={item.product.id} className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        {item.product.images && item.product.images.length > 0 && (
-                          <Image src={item.product.images[0]} alt={item.product.name} width={48} height={48} className="rounded-md object-cover" />
-                        )}
-                        <div>
-                          <p className="font-medium">{item.product.name}</p>
-                          <p className="text-sm text-muted-foreground">Cantidad: {item.quantity}</p>
+                  {viewingOrder.items.map((item, index) => {
+                    if (!item.product) return null;
+                    return (
+                      <div key={item.product.id || index} className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          {item.product.images && item.product.images.length > 0 && (
+                            <Image src={item.product.images[0]} alt={item.product.name} width={48} height={48} className="rounded-md object-cover" />
+                          )}
+                          <div>
+                            <p className="font-medium">{item.product.name}</p>
+                            <p className="text-sm text-muted-foreground">Cantidad: {item.quantity}</p>
+                          </div>
                         </div>
+                        <p className="font-semibold">Gs. {(item.product.price * item.quantity).toLocaleString('es-PY')}</p>
                       </div>
-                      <p className="font-semibold">Gs. {(item.product.price * item.quantity).toLocaleString('es-PY')}</p>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
               <Separator />
