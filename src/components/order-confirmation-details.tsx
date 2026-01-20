@@ -43,8 +43,7 @@ const DetailItem = ({ label, value }: { label: string, value: string }) => (
     </div>
 );
 
-
-export default function OrderConfirmationPage() {
+export default function OrderConfirmationDetails() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
