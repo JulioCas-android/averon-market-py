@@ -4,8 +4,8 @@
 set -e
 
 # --- Configuración ---
-# Nombre para tu backend en App Hosting.
-BACKEND_ID="averon-market"
+# Usamos el nombre del backend que ya existe en App Hosting.
+BACKEND_ID="studio"
 # --------------------
 
 PROJECT_ID=$(gcloud config get-value project)
@@ -16,7 +16,7 @@ echo "Using App Hosting Backend ID: $BACKEND_ID"
 echo "Building the application..."
 npm run build
 
-# 2. Create the App Hosting backend if it doesn't exist.
+# 2. Ensure the App Hosting backend exists.
 # The command will fail if the backend already exists, so we use `|| true` to continue.
 echo "Ensuring App Hosting backend '$BACKEND_ID' exists..."
 firebase apphosting:backends:create "$BACKEND_ID" --project="$PROJECT_ID" || true

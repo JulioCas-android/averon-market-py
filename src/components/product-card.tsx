@@ -23,10 +23,12 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [reviewCount, setReviewCount] = useState(0);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     // Generate random number on client to avoid hydration mismatch
     setReviewCount(Math.floor(Math.random() * 200) + 10);
+    setIsClient(true);
   }, []);
 
   const isInStock = product.stock > 0;
@@ -108,7 +110,7 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
                     <Star className="w-4 h-4 fill-current" />
                     <Star className="w-4 h-4 text-gray-300 fill-gray-300" />
                 </div>
-                {reviewCount > 0 && <span className="text-muted-foreground/80">({reviewCount})</span>}
+                {isClient && reviewCount > 0 && <span className="text-muted-foreground/80">({reviewCount})</span>}
             </div>
             
             {product.onSale && product.salePrice ? (
@@ -143,3 +145,5 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
     </Link>
   );
 }
+
+    
