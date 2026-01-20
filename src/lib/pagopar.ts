@@ -25,7 +25,7 @@ interface PagoparErrorResponse {
 
 type PagoparResponse = PagoparSuccessResponse | PagoparErrorResponse;
 
-export async function createPaymentOrder(order: Order, orderId: string): Promise<{ success: boolean; paymentUrl: string; hash?: string, message?: string }> {
+export async function createPaymentOrder(order: Order, orderId: string, baseUrl: string): Promise<{ success: boolean; paymentUrl: string; hash?: string, message?: string }> {
   if (!PAGOPAR_PUBLIC_KEY || !PAGOPAR_PRIVATE_KEY) {
     console.warn('Intento de crear un pago de Pagopar sin las claves configuradas en el servidor.');
     return { success: false, paymentUrl: '', message: 'La pasarela de pago online no está configurada actualmente.' };
@@ -75,7 +75,7 @@ export async function createPaymentOrder(order: Order, orderId: string): Promise
     fecha_maxima_pago: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' '), // 24 hours to pay
     id_pedido_comercio: orderId,
     descripcion_resumen: `Pedido #${orderId.substring(0, 7)}`,
-    url_retorno: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002'}/pagopar-redirect?orderId=${orderId}`, // Client redirect URL
+    url_retorno: `${baseUrl}/pagopar-redirect?orderId=${orderId}`,
   };
 
   // 3. Send request to Pagopar

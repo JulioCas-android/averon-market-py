@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { firestore } from '@/firebase/server';
 import { createHash } from 'crypto';
-import { collection, query, where, getDocs, updateDoc } from 'firebase-admin/firestore';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,6 +15,13 @@ export async function POST(request: NextRequest) {
     const { pagado, hash_pedido, token } = body.resultado[0];
     const privateKey = process.env.PAGOPAR_PRIVATE_KEY || '';
 
+    // Si no hay private key, no podemos validar el webhook, pero no debemos crashear
+    if (!privateKey) {
+        console.warn('Webhook de Pagopar recibido pero no hay clave privada configurada para validar.');
+        // Respondemos 200 para que Pagopar no reintente.
+        return NextResponse.json({ message: 'Webhook recibido, pero no procesado por falta de configuración.' }, { status: 200 });
+    }
+
     // 1. Validar el token de seguridad
     const expectedToken = createHash('sha1').update(`${privateKey}${hash_pedido}`).digest('hex');
 
@@ -24,10 +30,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Token inválido' }, { status: 403 });
     }
 
-    // 2. Encontrar y actualizar el pedido en Firestore
-    const ordersRef = collection(firestore, 'orders');
-    const q = query(ordersRef, where('pagoparTransactionId', '==', hash_pedido));
-    const querySnapshot = await getDocs(q);
+    // 2. Encontrar y actualizar el pedido en Firestore (usando el SDK de Admin correctamente)
+    const ordersRef = firestore.collection('orders');
+    const q = ordersRef.where('pagoparTransactionId', '==', hash_pedido);
+    const querySnapshot = await q.get();
 
     if (querySnapshot.empty) {
       console.error('No se encontró el pedido para el hash de Pagopar:', hash_pedido);
@@ -43,7 +49,7 @@ export async function POST(request: NextRequest) {
     } 
     // Podrías añadir lógica para otros estados si es necesario (ej: cancelado)
 
-    await updateDoc(orderDoc.ref, { status: newStatus });
+    await orderDoc.ref.update({ status: newStatus });
     console.log(`Pedido ${orderDoc.id} actualizado a estado: ${newStatus}`);
 
     // 3. Responder a Pagopar para confirmar la recepción

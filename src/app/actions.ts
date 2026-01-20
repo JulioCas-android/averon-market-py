@@ -8,6 +8,7 @@ import { suggestProductMargin, SuggestProductMarginInput } from '@/ai/flows/sugg
 import { createPaymentOrder } from '@/lib/pagopar';
 import type { Order } from '@/lib/types';
 import { firestore } from '@/firebase/server';
+import { headers } from 'next/headers';
 
 export async function sendPersonalizedOfferNotificationAction() {
     // In a real application, you would fetch this data for the logged-in user.
@@ -103,8 +104,13 @@ export async function createPagoparPaymentAction(orderId: string) {
         }
 
         const orderData = orderSnap.data() as Order;
+        
+        const headersList = headers();
+        const host = headersList.get('host') || 'localhost:9002';
+        const protocol = host.includes('localhost') ? 'http' : 'https';
+        const baseUrl = `${protocol}://${host}`;
 
-        const pagoparResponse = await createPaymentOrder(orderData, orderId);
+        const pagoparResponse = await createPaymentOrder(orderData, orderId, baseUrl);
 
         if (!pagoparResponse.success || !pagoparResponse.hash) {
              throw new Error(pagoparResponse.message || 'Error desconocido de Pagopar.');
