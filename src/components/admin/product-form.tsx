@@ -10,9 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Upload, FileCheck2, Trash2 } from 'lucide-react';
+import { Loader2, Sparkles, Upload, FileCheck2, Trash2, Calculator } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { generateProductImageAction, generateProductDescriptionAction, suggestProductCategoryAction } from '@/app/actions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -45,6 +45,10 @@ export function ProductForm({ initialData, allProducts, onSubmit, isSubmitting }
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isSuggestingCategory, setIsSuggestingCategory] = useState(false);
+  
+  const [cost, setCost] = useState(0);
+  const [margin, setMargin] = useState(30);
+  const [suggestedPrice, setSuggestedPrice] = useState(0);
 
   const form = useForm<z.infer<typeof productFormSchema>>({
     resolver: zodResolver(productFormSchema),
@@ -67,6 +71,15 @@ export function ProductForm({ initialData, allProducts, onSubmit, isSubmitting }
       featured: false,
     },
   });
+  
+  useEffect(() => {
+    if (cost > 0 && margin > 0 && margin < 100) {
+        const calculatedPrice = cost / (1 - (margin / 100));
+        setSuggestedPrice(calculatedPrice);
+    } else {
+        setSuggestedPrice(0);
+    }
+  }, [cost, margin]);
 
   const { append: appendImage, remove: removeImage } = useFieldArray({
     control: form.control,
@@ -228,6 +241,61 @@ export function ProductForm({ initialData, allProducts, onSubmit, isSubmitting }
         </div>
 
         <div className="lg:col-span-1 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                  <Calculator className="h-5 w-5 text-muted-foreground" />
+                  Calculadora de Precios
+              </CardTitle>
+              <CardDescription>Calcula tu precio de venta basado en el costo y el margen de ganancia deseado.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormItem>
+                  <FormLabel>Costo por Unidad (Gs.)</FormLabel>
+                  <FormControl>
+                      <Input 
+                          type="number" 
+                          placeholder="70000" 
+                          value={cost || ''} 
+                          onChange={(e) => setCost(Number(e.target.value))} 
+                      />
+                  </FormControl>
+              </FormItem>
+              <FormItem>
+                  <FormLabel>Margen de Ganancia (%)</FormLabel>
+                  <FormControl>
+                      <Input 
+                          type="number" 
+                          placeholder="30" 
+                          value={margin || ''} 
+                          onChange={(e) => setMargin(Number(e.target.value))} 
+                      />
+                  </FormControl>
+              </FormItem>
+              {suggestedPrice > 0 && (
+                  <div className="p-3 bg-muted rounded-md space-y-2">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Precio de Venta Sugerido:</p>
+                        <p className="text-xl font-bold">Gs. {Math.ceil(suggestedPrice).toLocaleString('es-PY')}</p>
+                      </div>
+                      <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full"
+                          onClick={() => {
+                            const finalPrice = Math.ceil(suggestedPrice);
+                            form.setValue('price', finalPrice, { shouldValidate: true });
+                            toast({ title: 'Precio Aplicado', description: `Se estableció el precio de venta en Gs. ${finalPrice.toLocaleString('es-PY')}.` });
+                          }}
+                      >
+                          Aplicar al Precio de Venta
+                      </Button>
+                  </div>
+              )}
+            </CardContent>
+          </Card>
+          
           <Card>
             <CardHeader>
               <CardTitle>Precios</CardTitle>
