@@ -1,7 +1,40 @@
 # Settings to manage and configure a Firebase App Hosting backend.
 # https://firebase.google.com/docs/app-hosting/configure
-
 runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+vpc:
+  # App Hosting backends can be configured to connect to a VPC network.
+  # https://firebase.google.com/docs/app-hosting/configure-vpc
+  connector: projects/${PROJECT_ID}/locations/us-central1/connectors/apphosting-managed
+  egress: PRIVATE_RANGES_ONLY
+# App Hosting backends can be configured to have environment variables.
+# https://firebase.google.com/docs/app-hosting/configure-env
+env:
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    secret: FIREBASE_API_KEY
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    secret: FIREBASE_AUTH_DOMAIN
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    secret: FIREBASE_PROJECT_ID
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    secret: FIREBASE_STORAGE_BUCKET
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    secret: FIREBASE_MESSAGING_SENDER_ID
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    secret: FIREBASE_APP_ID
+  - variable: PAGOPAR_PRIVATE_KEY
+    secret: PAGOPAR_PRIVATE_KEY
+  - variable: NEXT_PUBLIC_PAGOPAR_PUBLIC_KEY
+    secret: PAGOPAR_PUBLIC_KEY
+  - variable: GEMINI_API_KEY
+    secret: GEMINI_API_KEY
+  - variable: FIREBASE_SERVICE_ACCOUNT_KEY
+    secret: FIREBASE_SERVICE_ACCOUNT_KEY
+ingress:
+  # App Hosting backends can be configured to be public or private.
+  # Public backends are served on a Firebase-managed domain and can be configured to be served on a custom domain.
+  # Private backends are only accessible from within the VPC network.
+  # https://firebase.google.com/docs/app-hosting/private-backend
+  access: public
