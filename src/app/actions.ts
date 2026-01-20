@@ -1,4 +1,3 @@
-
 'use server';
 
 import { sendPersonalizedOfferNotification, PersonalizedOfferNotificationInput } from '@/ai/flows/personalized-offer-notifications';
@@ -8,7 +7,6 @@ import { suggestProductCategory, SuggestProductCategoryInput } from '@/ai/flows/
 import { suggestProductMargin, SuggestProductMarginInput } from '@/ai/flows/suggest-product-margin-flow';
 import { createPaymentOrder } from '@/lib/pagopar';
 import type { Order } from '@/lib/types';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { firestore } from '@/firebase/server';
 
 export async function sendPersonalizedOfferNotificationAction() {
@@ -97,10 +95,10 @@ export async function suggestProductMarginAction(input: SuggestProductMarginInpu
 
 export async function createPagoparPaymentAction(orderId: string) {
     try {
-        const orderDocRef = doc(firestore, 'orders', orderId);
-        const orderSnap = await getDoc(orderDocRef);
+        const orderDocRef = firestore.doc(`orders/${orderId}`);
+        const orderSnap = await orderDocRef.get();
 
-        if (!orderSnap.exists()) {
+        if (!orderSnap.exists) {
             throw new Error('El pedido no existe.');
         }
 
@@ -113,7 +111,7 @@ export async function createPagoparPaymentAction(orderId: string) {
         }
 
         // Save the transaction hash to the order
-        await updateDoc(orderDocRef, { pagoparTransactionId: pagoparResponse.hash });
+        await orderDocRef.update({ pagoparTransactionId: pagoparResponse.hash });
 
         return { success: true, paymentUrl: pagoparResponse.paymentUrl };
     } catch (error: any) {
