@@ -7,7 +7,6 @@ import { Footer } from '@/components/layout/footer';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import WhatsAppFAB from '@/components/whatsapp-fab';
-import { PWAProvider } from '@/components/pwa-provider';
 
 export const metadata: Metadata = {
   title: 'AVERON Market PY',
@@ -16,7 +15,6 @@ export const metadata: Metadata = {
     icon: 'https://i.imgur.com/UpxHMxI.png',
     apple: 'https://i.imgur.com/UpxHMxI.png',
   },
-  manifest: '/manifest.json',
 };
 
 export const viewport: Viewport = {
@@ -42,14 +40,12 @@ export default function RootLayout({
         <FirebaseClientProvider>
           <AuthProvider>
             <CartProvider>
-              <PWAProvider>
-                <div className="relative flex min-h-screen flex-col">
-                  <Header />
-                  <main className="flex-1">{children}</main>
-                  <Footer />
-                </div>
-                <Toaster />
-              </PWAProvider>
+              <div className="relative flex min-h-screen flex-col">
+                <Header />
+                <main className="flex-1">{children}</main>
+                <Footer />
+              </div>
+              <Toaster />
             </CartProvider>
           </AuthProvider>
         </FirebaseClientProvider>
