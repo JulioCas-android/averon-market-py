@@ -106,8 +106,12 @@ export default function CatalogPage() {
     const productDocRef = doc(firestore, 'products', editingProduct.id);
 
     const dataToUpdate = { ...values };
+    
+    // Remove optional fields if they are empty to avoid Firestore errors
+    if (!dataToUpdate.color) delete (dataToUpdate as Partial<typeof dataToUpdate>).color;
+    if (!dataToUpdate.imageHint) delete (dataToUpdate as Partial<typeof dataToUpdate>).imageHint;
     if (dataToUpdate.salePrice === 0 || dataToUpdate.salePrice === undefined) {
-        (dataToUpdate as Partial<typeof dataToUpdate>).salePrice = undefined;
+        delete (dataToUpdate as Partial<typeof dataToUpdate>).salePrice;
     }
     
     await updateDoc(productDocRef, dataToUpdate)
