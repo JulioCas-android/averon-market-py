@@ -5,6 +5,7 @@ import { sendPersonalizedOfferNotification, PersonalizedOfferNotificationInput }
 import { generateImage, GenerateImageInput } from '@/ai/flows/generate-image-flow';
 import { generateProductDescription, GenerateProductDescriptionInput } from '@/ai/flows/generate-product-description-flow';
 import { suggestProductCategory, SuggestProductCategoryInput } from '@/ai/flows/suggest-product-category-flow';
+import { suggestProductMargin, SuggestProductMarginInput } from '@/ai/flows/suggest-product-margin-flow';
 import { createPaymentOrder } from '@/lib/pagopar';
 import type { Order } from '@/lib/types';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
@@ -76,6 +77,21 @@ export async function suggestProductCategoryAction(productName: string) {
         console.error('Error suggesting product category:', error);
         const errorMessage = error.message || 'Ocurrió un error desconocido.';
         return { success: false, message: `No se pudo sugerir una categoría: ${errorMessage}` };
+    }
+}
+
+export async function suggestProductMarginAction(input: SuggestProductMarginInput) {
+    if (!input.productName || input.productCost <= 0) {
+        return { success: false, message: 'El nombre y el costo del producto son requeridos.' };
+    }
+
+    try {
+        const result = await suggestProductMargin(input);
+        return { success: true, margin: result.margin };
+    } catch (error: any) {
+        console.error('Error suggesting product margin:', error);
+        const errorMessage = error.message || 'Ocurrió un error desconocido.';
+        return { success: false, message: `No se pudo sugerir un margen: ${errorMessage}` };
     }
 }
 

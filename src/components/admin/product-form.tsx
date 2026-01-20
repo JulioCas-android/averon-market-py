@@ -14,7 +14,7 @@ import { Loader2, Sparkles, Upload, FileCheck2, Trash2, Calculator } from 'lucid
 import { Switch } from '@/components/ui/switch';
 import { useState, useRef, useMemo, useEffect } from 'react';
 import Image from 'next/image';
-import { generateProductImageAction, generateProductDescriptionAction, suggestProductCategoryAction } from '@/app/actions';
+import { generateProductImageAction, generateProductDescriptionAction, suggestProductCategoryAction, suggestProductMarginAction } from '@/app/actions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
 export const productFormSchema = z.object({
@@ -45,6 +45,7 @@ export function ProductForm({ initialData, allProducts, onSubmit, isSubmitting }
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isSuggestingCategory, setIsSuggestingCategory] = useState(false);
+  const [isSuggestingMargin, setIsSuggestingMargin] = useState(false);
   
   const [cost, setCost] = useState(0);
   const [margin, setMargin] = useState(30);
@@ -104,6 +105,24 @@ export function ProductForm({ initialData, allProducts, onSubmit, isSubmitting }
         toast({ title: 'Categoría Sugerida', description: `Se sugirió la categoría "${result.category}".` });
     } else {
         console.warn('Could not suggest a category:', result.message);
+    }
+  };
+
+  const handleSuggestMargin = async () => {
+    const productName = form.getValues('name');
+    const productCategory = form.getValues('category');
+    if (!productName || cost <= 0) {
+      toast({ variant: 'destructive', title: 'Datos Requeridos', description: 'Ingresa un nombre y un costo para el producto.' });
+      return;
+    }
+    setIsSuggestingMargin(true);
+    const result = await suggestProductMarginAction({ productName, productCategory, productCost: cost });
+    setIsSuggestingMargin(false);
+    if (result.success && result.margin) {
+      setMargin(result.margin);
+      toast({ title: 'Margen Sugerido', description: `Se sugirió un margen del ${result.margin}%.` });
+    } else {
+      toast({ variant: 'destructive', title: 'Error', description: result.message || 'No se pudo sugerir un margen.' });
     }
   };
 
@@ -262,7 +281,12 @@ export function ProductForm({ initialData, allProducts, onSubmit, isSubmitting }
                   </FormControl>
               </FormItem>
               <FormItem>
-                  <FormLabel>Margen de Ganancia (%)</FormLabel>
+                  <div className="flex justify-between items-center">
+                    <FormLabel>Margen de Ganancia (%)</FormLabel>
+                     <Button type="button" variant="ghost" size="sm" className="h-7" onClick={handleSuggestMargin} disabled={isSuggestingMargin || !form.watch('name') || !cost}>
+                        {isSuggestingMargin ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="mr-1.5 h-4 w-4" />} Sugerir
+                    </Button>
+                  </div>
                   <FormControl>
                       <Input 
                           type="number" 
