@@ -26,6 +26,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { createPagoparPaymentAction } from '@/app/actions';
+import { bankTransferDetails, eWalletDetails, manualPaymentInstruction } from '@/lib/payment-methods';
 
 const checkoutSchema = z.object({
   // Step 1
@@ -379,11 +380,12 @@ export default function CheckoutPage() {
                               <CardTitle className="text-base">Datos para Transferencia</CardTitle>
                           </CardHeader>
                           <CardContent className="p-0 text-sm space-y-1">
-                              <p><strong>Banco:</strong> Banco GNB Paraguay S.A.</p>
-                              <p><strong>Cuenta:</strong> 001-123456-7</p>
-                              <p><strong>Titular:</strong> AVERON Market PY</p>
-                              <p><strong>RUC:</strong> 80012345-6</p>
-                              <p className="mt-2 text-muted-foreground">Una vez realizada la transferencia, envía el comprobante a nuestro WhatsApp para confirmar tu pedido.</p>
+                              <p><strong>Banco:</strong> {bankTransferDetails.bankName}</p>
+                              <p><strong>Titular:</strong> {bankTransferDetails.accountHolderName}</p>
+                              <p><strong>Cuenta N°:</strong> {bankTransferDetails.accountNumber}</p>
+                              <p><strong>CI/RUC:</strong> {bankTransferDetails.accountHolderId}</p>
+                              {bankTransferDetails.alias && <p><strong>Alias:</strong> {bankTransferDetails.alias}</p>}
+                              <p className="mt-2 text-muted-foreground">{manualPaymentInstruction}</p>
                           </CardContent>
                       </Card>
                     )}
@@ -393,10 +395,11 @@ export default function CheckoutPage() {
                           <CardHeader className="p-0 pb-2">
                               <CardTitle className="text-base">Datos para Billetera Electrónica</CardTitle>
                           </CardHeader>
-                          <CardContent className="p-0 text-sm space-y-1">
-                               <p><strong>Número Tigo Money:</strong> 0981-123456</p>
-                               <p><strong>Número Personal:</strong> 0971-654321</p>
-                               <p className="mt-2 text-muted-foreground">Envía el comprobante de tu pago a nuestro WhatsApp para confirmar tu pedido.</p>
+                           <CardContent className="p-0 text-sm space-y-2">
+                              {eWalletDetails.map(wallet => (
+                                  <p key={wallet.name}><strong>{wallet.name}:</strong> {wallet.identifier}</p>
+                              ))}
+                              <p className="mt-2 text-muted-foreground">{manualPaymentInstruction}</p>
                           </CardContent>
                       </Card>
                     )}
