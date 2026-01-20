@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirestore, useCollection } from '@/firebase';
 import { addDoc, collection } from 'firebase/firestore';
@@ -11,6 +11,11 @@ import { PageHeader } from '@/components/admin/page-header';
 import { ProductForm, productFormSchema } from '@/components/admin/product-form';
 import { z } from 'zod';
 import type { Product } from '@/lib/types';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -18,8 +23,8 @@ export default function AddProductPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const productsQuery = firestore ? collection(firestore, 'products') : null;
-  const { data: allProducts } = useCollection<Product>(productsQuery);
+  const productsQuery = useMemo(() => firestore ? collection(firestore, 'products') : null, [firestore]);
+  const { data: allProducts, loading: productsLoading } = useCollection<Product>(productsQuery);
 
   const handleSubmit = async (values: z.infer<typeof productFormSchema>) => {
     if (!firestore) return;
@@ -50,12 +55,57 @@ export default function AddProductPage() {
         title="Registrar Nuevo Producto"
         description="Rellena la información para añadir un producto a tu inventario."
       />
-      <div className="p-8 pt-0">
-        <ProductForm 
-          onSubmit={handleSubmit}
-          isSubmitting={isSubmitting}
-          allProducts={allProducts || undefined}
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-8 pt-0">
+        <div className="lg:col-span-2">
+            <ProductForm 
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            allProducts={allProducts || undefined}
+            />
+        </div>
+        <div className="lg:col-span-1">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Productos Existentes</CardTitle>
+                    <CardDescription>Una vista rápida de tu inventario.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ScrollArea className="h-[70vh]">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Nombre</TableHead>
+                                    <TableHead className="text-right">Stock</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {productsLoading ? (
+                                    Array.from({length: 10}).map((_, i) => (
+                                        <TableRow key={i}>
+                                            <TableCell><Skeleton className="h-5 w-3/4" /></TableCell>
+                                            <TableCell><Skeleton className="h-5 w-1/2 ml-auto" /></TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : allProducts && allProducts.length > 0 ? (
+                                    allProducts.map(product => (
+                                        <TableRow key={product.id}>
+                                            <TableCell className="font-medium">{product.name}</TableCell>
+                                            <TableCell className="text-right">
+                                                <Badge variant={product.stock > 0 ? 'outline' : 'destructive'}>{product.stock}</Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={2} className="h-24 text-center">No hay productos.</TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </ScrollArea>
+                </CardContent>
+            </Card>
+        </div>
       </div>
     </>
   );
