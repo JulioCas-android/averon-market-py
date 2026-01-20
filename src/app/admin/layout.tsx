@@ -16,7 +16,7 @@ import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/use-auth';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Package, ShoppingCart, Tag, PlusCircle, User, LogOut, Loader2 } from 'lucide-react';
+import { Home, Package, ShoppingCart, Tag, PlusCircle, User, LogOut, Loader2, Settings } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
@@ -38,6 +38,7 @@ const AdminNav = ({ children }: { children: React.ReactNode }) => {
     { href: '/admin/catalog', label: 'Catálogo', icon: Package },
     { href: '/admin/add-product', label: 'Agregar Producto', icon: PlusCircle },
     { href: '/admin/sales', label: 'Ventas', icon: Tag },
+    { href: '/admin/settings', label: 'Configuración', icon: Settings },
   ];
 
   return (

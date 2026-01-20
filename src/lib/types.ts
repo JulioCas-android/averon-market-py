@@ -58,3 +58,25 @@ export interface Sale {
     total: number;
     createdAt: string;
 }
+
+// --- Tipos para la Configuración de Pagos ---
+
+export interface EWallet {
+  id: string; // for react-hook-form field array key
+  name: string;
+  identifier: string;
+}
+
+export interface BankAccount {
+  bankName: string;
+  accountNumber: string;
+  accountHolderName: string;
+  accountHolderId: string;
+  alias?: string;
+}
+
+export interface PaymentSettings {
+  id: string; // Should be a fixed value like 'payment'
+  bankAccount: BankAccount;
+  eWallets: EWallet[];
+}

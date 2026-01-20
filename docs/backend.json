@@ -121,6 +121,35 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["items", "total", "createdAt"]
+    },
+    "PaymentSettings": {
+      "title": "Payment Settings",
+      "description": "Configuration for manual payment methods like bank transfers and e-wallets.",
+      "type": "object",
+      "properties": {
+        "bankAccount": {
+          "type": "object",
+          "properties": {
+            "bankName": { "type": "string" },
+            "accountHolderName": { "type": "string" },
+            "accountNumber": { "type": "string" },
+            "accountHolderId": { "type": "string" },
+            "alias": { "type": "string" }
+          },
+          "required": ["bankName", "accountHolderName", "accountNumber", "accountHolderId"]
+        },
+        "eWallets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "identifier": { "type": "string" }
+            },
+            "required": ["name", "identifier"]
+          }
+        }
+      }
     }
   },
   "auth": {
@@ -142,6 +171,10 @@
     "/sales/{saleId}": {
       "schema": { "$ref": "#/backend/entities/Sale" },
       "description": "Stores direct sales records from the admin POS."
+    },
+    "/settings/{settingId}": {
+      "schema": { "$ref": "#/backend/entities/PaymentSettings" },
+      "description": "Stores application settings. A single document with a fixed ID like 'payment' will be used."
     }
   }
 }

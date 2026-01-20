@@ -13,20 +13,20 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import Image from 'next/image';
-import { useAuth, useFirestore } from '@/firebase';
+import { useAuth, useFirestore, useDoc } from '@/firebase';
 import { addDoc, collection, type DocumentReference } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowRight, Check, MapPin, Info } from 'lucide-react';
-import type { Order } from '@/lib/types';
+import { Loader2, ArrowRight, Check, Info } from 'lucide-react';
+import type { Order, PaymentSettings } from '@/lib/types';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { createPagoparPaymentAction } from '@/app/actions';
-import { bankTransferDetails, eWalletDetails, manualPaymentInstruction } from '@/lib/payment-methods';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const checkoutSchema = z.object({
   // Step 1
@@ -79,6 +79,9 @@ export default function CheckoutPage() {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState(1);
+  
+  const { data: paymentSettings, loading: settingsLoading } = useDoc<PaymentSettings>('settings/payment');
+  const manualPaymentInstruction = "Una vez realizado el pago, envía el comprobante a nuestro WhatsApp para confirmar tu pedido.";
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -355,7 +358,7 @@ export default function CheckoutPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Elegí una Opción</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select onValueChange={field.onChange} defaultValue={field.value} disabled={settingsLoading}>
                               <FormControl>
                                   <SelectTrigger>
                                       <SelectValue placeholder="-- Selecciona tu Método de Pago--" />
@@ -374,30 +377,32 @@ export default function CheckoutPage() {
                       )}
                     />
 
-                    {paymentMethod === 'TRNF' && (
+                    {settingsLoading && (paymentMethod === 'TRNF' || paymentMethod === 'EWALLET') && <Skeleton className="w-full h-32" />}
+
+                    {paymentMethod === 'TRNF' && !settingsLoading && paymentSettings?.bankAccount && (
                       <Card className="p-4 bg-muted/30">
                           <CardHeader className="p-0 pb-2">
                               <CardTitle className="text-base">Datos para Transferencia</CardTitle>
                           </CardHeader>
                           <CardContent className="p-0 text-sm space-y-1">
-                              <p><strong>Banco:</strong> {bankTransferDetails.bankName}</p>
-                              <p><strong>Titular:</strong> {bankTransferDetails.accountHolderName}</p>
-                              <p><strong>Cuenta N°:</strong> {bankTransferDetails.accountNumber}</p>
-                              <p><strong>CI/RUC:</strong> {bankTransferDetails.accountHolderId}</p>
-                              {bankTransferDetails.alias && <p><strong>Alias:</strong> {bankTransferDetails.alias}</p>}
+                              <p><strong>Banco:</strong> {paymentSettings.bankAccount.bankName}</p>
+                              <p><strong>Titular:</strong> {paymentSettings.bankAccount.accountHolderName}</p>
+                              <p><strong>Cuenta N°:</strong> {paymentSettings.bankAccount.accountNumber}</p>
+                              <p><strong>CI/RUC:</strong> {paymentSettings.bankAccount.accountHolderId}</p>
+                              {paymentSettings.bankAccount.alias && <p><strong>Alias:</strong> {paymentSettings.bankAccount.alias}</p>}
                               <p className="mt-2 text-muted-foreground">{manualPaymentInstruction}</p>
                           </CardContent>
                       </Card>
                     )}
 
-                    {paymentMethod === 'EWALLET' && (
+                    {paymentMethod === 'EWALLET' && !settingsLoading && paymentSettings?.eWallets && (
                       <Card className="p-4 bg-muted/30">
                           <CardHeader className="p-0 pb-2">
                               <CardTitle className="text-base">Datos para Billetera Electrónica</CardTitle>
                           </CardHeader>
                            <CardContent className="p-0 text-sm space-y-2">
-                              {eWalletDetails.map(wallet => (
-                                  <p key={wallet.name}><strong>{wallet.name}:</strong> {wallet.identifier}</p>
+                              {paymentSettings.eWallets.map(wallet => (
+                                  <p key={wallet.id}><strong>{wallet.name}:</strong> {wallet.identifier}</p>
                               ))}
                               <p className="mt-2 text-muted-foreground">{manualPaymentInstruction}</p>
                           </CardContent>
