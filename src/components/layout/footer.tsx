@@ -28,7 +28,7 @@ export function Footer() {
   }, []);
 
   return (
-    <footer className="bg-muted text-muted-foreground border-t">
+    <footer className="bg-muted text-muted-foreground border-t" translate="no">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-1 space-y-4">
