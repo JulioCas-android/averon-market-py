@@ -164,6 +164,17 @@ export default function CheckoutPage() {
   };
 
   const onSubmit = async (formValues: CheckoutFormValues) => {
+    if (formValues.paymentMethod === 'ONLINE') {
+      toast({
+        title: 'Función no disponible',
+        description:
+          'El pago en línea estará disponible muy pronto. Por favor, selecciona otro método de pago.',
+        variant: 'default',
+        duration: 6000,
+      });
+      return;
+    }
+
     setIsProcessing(true);
   
     if (!firestore) {
