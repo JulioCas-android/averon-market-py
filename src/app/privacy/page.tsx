@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -13,7 +12,7 @@ export default function PrivacyPage() {
   return (
     <div className="container mx-auto px-4 py-12 max-w-4xl">
       <h1 className="text-3xl font-bold mb-4">POLÍTICA DE PRIVACIDAD</h1>
-      <p className="text-sm text-muted-foreground mb-8">Última actualización: {date}</p>
+      {date && <p className="text-sm text-muted-foreground mb-8">Última actualización: {date}</p>}
       
       <div className="space-y-6 text-foreground/90 leading-relaxed">
         <p>Averon Market PY se compromete a proteger la privacidad y los datos personales de sus usuarios, conforme a la Constitución Nacional, la Ley N.º 1682/01 y sus modificatorias, así como demás normas aplicables en la República del Paraguay.</p>

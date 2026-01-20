@@ -12,7 +12,7 @@ export default function TermsPage() {
   return (
     <div className="container mx-auto px-4 py-12 max-w-4xl">
       <h1 className="text-3xl font-bold mb-4">TÉRMINOS Y CONDICIONES DE SERVICIO</h1>
-      <p className="text-sm text-muted-foreground mb-8">Última actualización: {date}</p>
+      {date && <p className="text-sm text-muted-foreground mb-8">Última actualización: {date}</p>}
       
       <div className="space-y-6 text-foreground/90 leading-relaxed">
         <p>El presente documento regula el acceso, navegación y uso del sitio web de Averon Market PY (en adelante, “la Empresa”), así como las transacciones realizadas a través de la plataforma. Al acceder o utilizar este sitio, el usuario declara haber leído, comprendido y aceptado íntegramente estos Términos y Condiciones.</p>

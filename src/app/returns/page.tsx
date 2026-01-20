@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -13,7 +12,7 @@ export default function ReturnsPage() {
   return (
     <div className="container mx-auto px-4 py-12 max-w-4xl">
       <h1 className="text-3xl font-bold mb-4">POLÍTICA DE DEVOLUCIONES Y REEMBOLSOS</h1>
-      <p className="text-sm text-muted-foreground mb-8">Última actualización: {date}</p>
+      {date && <p className="text-sm text-muted-foreground mb-8">Última actualización: {date}</p>}
 
       <div className="space-y-6 text-foreground/90 leading-relaxed">
         <p>Esta política se establece conforme a la Ley N.º 1334/98 de Defensa del Consumidor y demás disposiciones aplicables en la República del Paraguay.</p>
