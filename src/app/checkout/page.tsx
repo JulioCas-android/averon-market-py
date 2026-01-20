@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -71,6 +70,35 @@ const ProgressIndicator = ({ step, totalSteps }: { step: number, totalSteps: num
     </div>
 );
 
+function CheckoutPageSkeleton() {
+    return (
+        <div className="container mx-auto max-w-2xl px-4 py-12">
+            <Skeleton className="h-10 w-1/2 mx-auto mb-8" />
+            <div className="space-y-8">
+                <Card>
+                    <CardHeader>
+                        <Skeleton className="h-8 w-1/3" />
+                    </CardHeader>
+                    <CardContent className="space-y-4 pt-6">
+                        <Skeleton className="h-16 w-full" />
+                        <Skeleton className="h-16 w-full" />
+                        <Separator />
+                        <Skeleton className="h-8 w-1/4 ml-auto" />
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <Skeleton className="h-8 w-1/3" />
+                    </CardHeader>
+                    <CardContent className="space-y-6 pt-6">
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full" />
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    );
+}
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
@@ -80,6 +108,12 @@ export default function CheckoutPage() {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState(1);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    // This effect runs only on the client, confirming the component has mounted.
+    setIsClient(true);
+  }, []);
   
   const { data: paymentSettings, loading: settingsLoading } = useDoc<PaymentSettings>('settings/payment');
   const manualPaymentInstruction = "Una vez realizado el pago, envía el comprobante a nuestro WhatsApp para confirmar tu pedido.";
@@ -101,17 +135,21 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
-    if (user) {
+    if (!authLoading && user) {
         form.reset({
             ...form.getValues(),
             razonSocial: user.displayName || '',
             email: user.email || '',
         });
     }
-  }, [user, form]);
+  }, [user, authLoading, form]);
 
   const thirdPartyReceiver = form.watch('thirdPartyReceiver');
   const paymentMethod = form.watch('paymentMethod');
+
+  if (!isClient) {
+    return <CheckoutPageSkeleton />;
+  }
 
   if (items.length === 0 && !isProcessing) {
     return (
@@ -165,17 +203,6 @@ export default function CheckoutPage() {
   };
 
   const onSubmit = async (formValues: CheckoutFormValues) => {
-    if (formValues.paymentMethod === 'ONLINE') {
-      toast({
-        title: 'Función no disponible',
-        description:
-          'El pago en línea estará disponible muy pronto. Por favor, selecciona otro método de pago.',
-        variant: 'default',
-        duration: 6000,
-      });
-      return;
-    }
-
     setIsProcessing(true);
   
     if (!firestore) {
@@ -196,7 +223,7 @@ export default function CheckoutPage() {
       shippingPhone: formValues.phone,
       items: items.map(item => ({ ...item, product: { ...item.product } })), // Ensure plain objects
       total,
-      status: 'Pendiente de Pago',
+      status: formValues.paymentMethod === 'ONLINE' ? 'Procesando' : 'Pendiente de Pago',
       createdAt: new Date().toISOString(),
       paymentMethod: formValues.paymentMethod,
       thirdPartyReceiver: formValues.thirdPartyReceiver,
